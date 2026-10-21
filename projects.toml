@@ -1,0 +1,17 @@
+[projects.3match]
+name = "3Match"
+root = "E:/Code/3Match"
+state = "docs/STATE.md"
+roadmap = "docs/ROADMAP.md"
+
+[projects.cat-and-dog]
+name = "CatAndDog"
+root = "E:/Code/CatAndDog"
+state = "docs/STATE.md"
+roadmap = "docs/DEVELOPMENT_ROADMAP.md"
+
+[projects.incremental-xxx]
+name = "IncrementalXxx"
+root = "E:/Code/IncrementalXxx"
+state = "docs/STATE.md"
+roadmap = "docs/ROADMAP.md"

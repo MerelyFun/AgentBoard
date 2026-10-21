@@ -1,0 +1,14 @@
+.local/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+
+# Web app
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+playwright-report/
+test-results/
