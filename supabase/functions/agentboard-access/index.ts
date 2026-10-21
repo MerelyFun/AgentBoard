@@ -10,7 +10,7 @@ Deno.serve(async (request) => {
   let accessCode: string;
   try {
     const body = await readJson(request, 1024) as Record<string, unknown>;
-    if (!body || typeof body !== 'object' || Object.keys(body).length !== 1 || typeof body.access_code !== 'string' || !/^[A-Za-z0-9_-]{40,128}$/.test(body.access_code)) throw new Error('invalid');
+    if (!body || typeof body !== 'object' || Object.keys(body).length !== 1 || typeof body.access_code !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(body.access_code)) throw new Error('invalid');
     accessCode = body.access_code;
   } catch { return respond(request, 401, { error: 'invalid_access_code' }); }
   try {

@@ -10,7 +10,7 @@
 ## 已完成
 
 - 四角色 / v1 事件协议不变；原 Python begin/event 已支持先写 outbox、自动有界发送和准确 ACK 归档。新增 flush，网络失败不影响开发。
-- Supabase llcgzbyvpchabvodytrc：已应用 20261021173234_agentboard_cloud.sql，角色 token / viewer code 哈希已配置，agentboard-ingest 与 agentboard-access 均 ACTIVE v1。
+- Supabase llcgzbyvpchabvodytrc：已应用 20261021173234_agentboard_cloud.sql，角色 token / viewer code 哈希已配置，agentboard-ingest ACTIVE v1、agentboard-access ACTIVE v2。
 - 数据库事务去重和乱序投影；私表、写 RPC 仅 service_role；网页由 Auth + membership RLS 只读。
 - 前端访问码登录、Realtime、断线/重试、注销清空及演示/导入隔离已实现。
 - MerelyFun/AgentBoard 公开仓库及 Pages 已发布；首次发布提交 1ddf378，Actions 39645112316 成功，公开构建变量和 HTTPS 已配置。
@@ -31,6 +31,7 @@
 - 浏览器证据保存在本机任务目录，不入 Git：agentboard-live-qa.png、agentboard-mobile.png、agentboard-published.png。
 - 演示模式显示 7 个示例，切回云端恢复 0 个执行，数据无混合；退出登录恢复“请先登录”和访问码表单。
 - 正式页浏览器控制台无 warn / error。
+- 按用户要求允许短访问码，服务端哈希与本机访问码文件已同步；真实登录和鉴权 snapshot 均返回 200，可读取三个项目。
 - Advisors 无安全 WARN/ERROR。私表 RLS 无策略是刻意拒绝普通角色；新索引未使用 INFO 属新建空库，详情见部署记录。
 
 ## 边界
