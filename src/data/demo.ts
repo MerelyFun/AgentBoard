@@ -20,41 +20,41 @@ export function createDemoSnapshot(now: Now = Date.now()): BoardSnapshot {
   };
   const runs: AgentRun[] = [
     {
-      id: 'demo-match-producer', projectId: '3match', role: 'game-producer', label: '制作人',
+      id: 'demo-match-producer', instanceId: 'c24d1100-1111-4111-8111-00000000f931', projectId: '3match', role: 'game-producer', label: '制作人',
       task: '确认本阶段目标与开发边界', stage: matchStage, step: stepByProject['3match'],
       status: 'running', lastReportedAt: at(2), summary: '明确竖屏交互验收条件，等待平台验证结果。',
     },
     {
-      id: 'demo-match-developer', projectId: '3match', role: 'game-tech-lead', label: '技术负责人', lead: true,
+      id: 'demo-match-developer', instanceId: '4be8c200-1111-4111-8111-00000000d8a2', projectId: '3match', role: 'game-tech-lead', label: '技术负责人', lead: true,
       task: '验证抖音构建与工具导入', stage: matchStage, step: stepByProject['3match'],
       status: 'blocked', lastReportedAt: at(4), summary: '缺少测试 AppID，平台导入验证暂时受阻。',
       parentRunId: 'demo-match-producer',
     },
     {
-      id: 'demo-cat-producer', projectId: 'cat-and-dog', role: 'game-producer', label: '制作人',
+      id: 'demo-cat-producer', instanceId: 'dc410d00-1111-4111-8111-00000000b7e0', projectId: 'cat-and-dog', role: 'game-producer', label: '制作人',
       task: '组织单局闭环并行开发', stage: catStage, step: stepByProject['cat-and-dog'],
       status: 'running', lastReportedAt: at(3), summary: '确认单局闭环范围与验收条件，交技术负责人组织实现。',
     },
     {
-      id: 'demo-cat-developer-a', projectId: 'cat-and-dog', role: 'game-tech-lead', label: '技术负责人', lead: true,
+      id: 'demo-cat-developer-a', instanceId: '6f2a9c00-1111-4111-8111-00000000a610', projectId: 'cat-and-dog', role: 'game-tech-lead', label: '技术负责人', lead: true,
       task: '集成胜败判定与重试状态复位', stage: catStage, step: stepByProject['cat-and-dog'],
       status: 'running', lastReportedAt: at(1), summary: '已约定战斗状态接口，正在集成并联调重复开局。',
       parentRunId: 'demo-cat-producer',
     },
     {
-      id: 'demo-cat-developer-b', projectId: 'cat-and-dog', role: 'game-developer', label: '开发 B',
+      id: 'demo-cat-developer-b', instanceId: 'a8f2c100-1111-4111-8111-000000004c91', projectId: 'cat-and-dog', role: 'game-developer', label: '开发 B',
       task: '制作结算面板与重试交互', stage: catStage, step: stepByProject['cat-and-dog'],
       status: 'submitted', lastReportedAt: at(5), summary: '结算面板交互模块已提交，等待技术负责人集成。',
       parentRunId: 'demo-cat-developer-a',
     },
     {
-      id: 'demo-incremental-verifier', projectId: 'incremental-xxx', role: 'game-verifier', label: '验收',
+      id: 'demo-incremental-verifier', instanceId: 'f92a1000-1111-4111-8111-00000000f8b2', projectId: 'incremental-xxx', role: 'game-verifier', label: '验收',
       task: '核对收益预览与结算公式一致性', stage: incrementalStage, step: stepByProject['incremental-xxx'],
       status: 'passed', lastReportedAt: at(32), summary: '此演示任务的公式检查通过；不代表整个里程碑验收完成。',
       evidence: ['演示证据：同一组参数下，预览与结算结果一致。'],
     },
     {
-      id: 'demo-incremental-developer', projectId: 'incremental-xxx', role: 'game-developer', label: '开发 A',
+      id: 'demo-incremental-developer', instanceId: 'b36e9a00-1111-4111-8111-000000004d11', projectId: 'incremental-xxx', role: 'game-developer', label: '开发 A',
       task: '实现免费经理自动经营', stage: incrementalStage, step: stepByProject['incremental-xxx'],
       status: 'running', lastReportedAt: at(26), summary: '上次报告正在接入经理自动经营，后续状态待确认。',
     },

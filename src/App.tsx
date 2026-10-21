@@ -3,11 +3,13 @@ import { FolderInput, LockKeyhole, LogOut, RefreshCw, Settings, Upload, X } from
 import { Sidebar, Brand } from './components/Sidebar';
 import { ProjectStrip } from './components/ProjectStrip';
 import { AgentList } from './components/AgentList';
+import { BoardFilters } from './components/BoardFilters';
 import { EventTimeline } from './components/EventTimeline';
 import { RunDetails, EventDetails } from './components/Details';
 import { Dialog } from './components/Dialog';
-import { PROJECTS, filterRuns, sortEvents, formatAbsoluteTime, type AgentRole, type AgentRun, type BoardEvent, type BoardSnapshot, type DisplayStatus, type ProjectId } from './domain/board';
+import { PROJECTS, sortEvents, formatAbsoluteTime, type AgentRole, type AgentRun, type BoardEvent, type BoardSnapshot, type DisplayStatus, type ProjectId } from './domain/board';
 import { CLOUD_CONFIG } from './data/cloud-config';
+import { filterBoardEvents, filterBoardRuns, resolveEventRun } from './domain/presentation';
 import { useCloudBoard } from './data/use-cloud-board';
 
 type Source = 'cloud' | 'disconnected' | 'demo' | 'imported';
@@ -47,8 +49,8 @@ export default function App() {
   }, [source, demoSnapshot]);
 
   const snapshot = source === 'cloud' ? cloud.snapshot ?? emptySnapshot : source === 'demo' ? demoSnapshot ?? emptySnapshot : source === 'imported' ? importedSnapshot ?? emptySnapshot : emptySnapshot;
-  const runs = filterRuns(snapshot.runs, { projectId, role, status, query }, now);
-  const events = sortEvents(snapshot.events).filter((item) => projectId === 'all' || item.projectId === projectId);
+  const runs = filterBoardRuns(snapshot.runs, { projectId, role, status, query }, now);
+  const events = filterBoardEvents(snapshot.events, snapshot.runs, { projectId, role, status, query }, now);
   const selectedProject = PROJECTS.find((p) => p.id === projectId);
   function resetFilters() { setProjectId('all'); setRole('all'); setStatus('all'); setQuery(''); }
   function changeSource(next: Source) { setSource(next); setRun(null); setEvent(null); setAuthError(''); resetFilters(); }
@@ -69,7 +71,7 @@ export default function App() {
   }
   const cloudLabel = cloud.phase === 'live' ? '实时连接' : cloud.phase === 'signed-out' ? '请先登录' : cloud.phase === 'connecting' ? '正在连接' : cloud.phase === 'reconnecting' ? '正在重连' : cloud.phase === 'offline' ? '网络已断开' : '同步异常';
   const cloudEmptyTitle = cloud.snapshot ? '等待第一条上报' : cloud.phase === 'signed-out' ? '登录后查看实时状态' : cloud.phase === 'connecting' ? '正在获取云端状态…' : '尚未取得云端数据';
-  const cloudEmptyDescription = cloud.snapshot ? '尚未收到 Agent 上报。新上报会自动出现在这里。' : cloud.phase === 'signed-out' ? '使用本机保存的访问码登录，查看三个项目的上报。' : '连接成功后，这里会显示真实任务、阶段与关键行动。';
+  const cloudEmptyDescription = cloud.snapshot ? '尚未收到 Agent 上报。新上报会自动出现在这里。' : cloud.phase === 'signed-out' ? '使用访问码登录，查看项目的最新上报。' : '连接成功后，这里会显示真实任务、阶段与关键行动。';
   function viewEvent(item: BoardEvent) {
     setEvent(item);
   }
@@ -100,19 +102,20 @@ export default function App() {
           </select></label><button className="button settings-button" aria-label="连接设置" onClick={() => setSettings(true)}><Settings size={18} /><span>连接设置</span></button></div>
       </header>
       <main className="main-content">
-        <div className="page-heading"><div><h1>{selectedProject ? selectedProject.name : '三个项目，一个工作台。'}</h1><p>{selectedProject ? selectedProject.gameName : '阶段、任务与关键行动，一目了然。'}</p></div>
+        <div className="page-heading"><div><h1>{selectedProject ? selectedProject.name : '项目总览'}</h1><p>{selectedProject ? selectedProject.gameName : '追踪每个 Agent 的阶段与行动。'}</p></div>
           <span className="source-note">{source === 'cloud' ? `${cloudLabel}${cloud.lastSyncedAt ? ` · 上次同步 ${formatAbsoluteTime(cloud.lastSyncedAt)}` : ''}` : source === 'demo' ? '以下均为演示数据' : source === 'imported' ? '本地导入 · 非实时同步' : '等待连接数据源'}</span>
         </div>
         {source === 'cloud' && cloud.phase !== 'live' ? <div className={`cloud-banner ${cloud.error ? 'cloud-warning' : ''}`} role="status"><span>{cloud.error || (cloud.phase === 'signed-out' ? '请先登录。项目上报仅向持有访问码的你开放。' : '正在连接云端，取得真实状态后自动更新。')}{cloud.snapshot && cloud.lastSyncedAt ? ` 上次同步：${formatAbsoluteTime(cloud.lastSyncedAt)}。` : ''}</span>{cloud.phase === 'signed-out' ? <button className="text-button" onClick={() => setSettings(true)}>登录查看</button> : cloud.phase !== 'connecting' ? <button className="text-button" onClick={() => void cloud.retry()}>立即重试</button> : null}</div> : null}
         {error ? <div className="error-banner" role="alert"><span>{error}</span><button className="icon-button" aria-label="关闭错误提示" onClick={() => setError('')}><X size={17} /></button></div> : null}
         <div className="mobile-project-filter"><label className="sr-only" htmlFor="mobile-project">选择项目</label><select id="mobile-project" value={projectId} onChange={(e) => setProjectId(e.target.value as ProjectId | 'all')}><option value="all">全部项目</option>{PROJECTS.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
         <ProjectStrip projects={snapshot.projects.filter((p) => projectId === 'all' || p.id === projectId)} runs={snapshot.runs} selected={projectId} now={now} onSelect={setProjectId} />
+        <BoardFilters role={role} status={status} query={query} onRole={setRole} onStatus={setStatus} onQuery={setQuery} onClear={() => { setRole('all'); setStatus('all'); setQuery(''); }} />
         <div className="activity-layout">
-          <AgentList runs={runs} total={snapshot.runs.length} role={role} status={status} query={query} now={now} demo={source === 'demo'} hasReports={snapshot.runs.length > 0}
+          <AgentList runs={runs} identityRuns={snapshot.runs} total={snapshot.runs.length} now={now} demo={source === 'demo'} hasReports={snapshot.runs.length > 0}
             emptyTitle={source === 'cloud' ? cloudEmptyTitle : undefined} emptyDescription={source === 'cloud' ? cloudEmptyDescription : undefined}
             onConnect={source === 'cloud' ? () => setSettings(true) : undefined} connectLabel={cloud.phase === 'signed-out' ? '登录查看' : '连接设置'}
-            onRole={setRole} onStatus={setStatus} onQuery={setQuery} onClear={resetFilters} onRun={setRun} onDemo={() => changeSource('demo')} onImport={() => fileInput.current?.click()} />
-          <EventTimeline events={events} now={now} demo={source === 'demo'} onEvent={viewEvent} />
+            onClear={resetFilters} onRun={setRun} onDemo={() => changeSource('demo')} onImport={() => fileInput.current?.click()} />
+          <EventTimeline events={events} runs={snapshot.runs} hasEvents={snapshot.events.length > 0} now={now} demo={source === 'demo'} onEvent={viewEvent} />
         </div>
       </main>
     </div>
@@ -128,7 +131,7 @@ export default function App() {
       {error ? <p className="warning" role="alert">{error}</p> : null}
       <p className="dialog-footnote">演示、本地导入与云端数据分别显示，不会混合。Agent 只在重要行动时上报；网页不会推断未上报的进度。</p>
     </Dialog> : null}
-    {run ? <RunDetails run={run} events={sortEvents(snapshot.events.filter((item) => item.runId === run.id))} now={now} demo={source === 'demo'} onClose={() => setRun(null)} /> : null}
-    {event ? <EventDetails event={event} demo={source === 'demo'} onClose={() => setEvent(null)} /> : null}
+    {run ? <RunDetails run={run} runs={snapshot.runs} events={sortEvents(snapshot.events.filter((item) => item.runId === run.id))} now={now} demo={source === 'demo'} onClose={() => setRun(null)} /> : null}
+    {event ? <EventDetails event={event} run={resolveEventRun(event, snapshot.runs)} runs={snapshot.runs} demo={source === 'demo'} onClose={() => setEvent(null)} /> : null}
   </div>;
 }
