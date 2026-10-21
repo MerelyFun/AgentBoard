@@ -1,0 +1,7 @@
+project_id = "AgentBoard"
+
+[functions.agentboard-ingest]
+verify_jwt = false
+
+[functions.agentboard-access]
+verify_jwt = false

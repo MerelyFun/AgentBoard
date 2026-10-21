@@ -158,7 +158,7 @@ describe('Python reporter contract', () => {
     const dataDir = mkdtempSync(join(temporaryRoot, 'agentboard-report-qa-'));
     const reporter = fileURLToPath(new URL('../../tools/report.py', import.meta.url));
     const python = process.env.PYTHON ?? (process.platform === 'win32' ? 'python' : 'python3');
-    const options = { encoding: 'utf8' as const, env: { ...process.env, AGENTBOARD_DATA_DIR: dataDir, PYTHONUTF8: '1' } };
+    const options = { encoding: 'utf8' as const, env: { ...process.env, AGENTBOARD_DATA_DIR: dataDir, AGENTBOARD_TRANSPORT_CONFIG: join(dataDir, 'no-transport.json'), PYTHONUTF8: '1' } };
     const cli = (...args: string[]): { run_id: string; delivery: string } => JSON.parse(execFileSync(python, [reporter, ...args], options));
     try {
       const producer = cli('begin', '--project', 'cat-and-dog', '--role', 'game-producer',

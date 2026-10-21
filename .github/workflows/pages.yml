@@ -35,6 +35,9 @@ jobs:
       - name: Compute Pages base path
         run: node scripts/pages-base.mjs >> "$GITHUB_ENV"
       - name: Build static site
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
         run: npm run build
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

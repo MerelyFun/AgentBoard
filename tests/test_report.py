@@ -15,7 +15,10 @@ class ReporterTest(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.storage = Path(self.temporary.name)
-        self.environment = dict(os.environ, AGENTBOARD_DATA_DIR=self.temporary.name)
+        self.environment = dict(
+            os.environ, AGENTBOARD_DATA_DIR=self.temporary.name,
+            AGENTBOARD_TRANSPORT_CONFIG=str(self.storage / "transport-not-configured.json"),
+        )
 
     def call(self, *arguments, expected=0):
         result = subprocess.run(

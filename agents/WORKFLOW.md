@@ -46,14 +46,16 @@ run 是“角色×任务×阶段的一次执行”，不是永久 Agent 身份�
 
 不逐工具上报，不定时让模型写心跳，不上传对话、思考、源码正文或密钥。摘要一句话，证据只用相对路径、提交号或安全链接。相互依赖的问题先通知协作者，数据库不充当消息总线。
 
-上报错误不阻断开发，不反复重试；本次结束时简述未送达即可。`delivery=queued` 表示已本地排队，绝不说已上传。业务事件和传输状态分开。当前仅有本地发件箱，Supabase 接通后由同一入口负责发送，角色无需直接写 SQL、持有管理密钥或 git push。
+上报错误不阻断开发，不让模型反复重试。缺配置、暂时离线、发送忙或正常 queued 时静默继续，不逐次提醒用户，不要求用户通知或重启 agent；只有本地记录失败、凭证失效等持续且需要用户处理的问题才简述一次。`delivery=queued` 表示已本地排队，绝不说已上传；只有收到相同 event_id 的云端确认才返回 `delivery=sent`。业务事件和传输状态分开。原入口自动有界补发，角色无需直接写 SQL、持有管理密钥或 git push。
 
-## 未来接口约定
+## 接口约定
 
 每条事件包含：`schema_version, event_id, occurred_at, run_id, instance_id, parent_run_id, project_id, role, lead, task_id, milestone{id,name}, step{id,name}, kind, summary, evidence[], verdict?`。阶段快照随事件携带，后端可独立处理；event_id 用作幂等键，occurred_at 是客户端时间，服务端另记 received_at，不能仅凭到达顺序覆盖状态。
 
 角色值为 game-producer / game-tech-lead / game-developer / game-verifier。v1 的 lead 字段保留兼容，新执行由 `role == game-tech-lead` 自动派生，不能单独传 --lead；历史 developer+lead=true 仍按历史事实保留。前端识别 role 与 parent 链，不能把模块 submitted 或集成 submitted 展示成验收通过。
 
-未来由 Supabase 接收端校验项目写入权限及角色事件约束，事务写入事件与状态投影；不能把本地 --role 当作安全授权。重试保留 event_id。密钥只留本机环境/服务端；Pages 前端仅持公开配置并受登录/RLS 约束，不能嵌入管理密钥。本轮不创建云资源或实现 HTTP 接收端。
+Supabase 接收端校验项目写入权限及角色事件约束，事务写入事件与状态投影；不能把本地 --role 当作安全授权。重试保留 event_id。角色写入令牌只留本机 `.local/transport.json`；Pages 前端仅持公开配置并受登录/RLS 约束，不能嵌入管理密钥。
+
+`begin/event` 自动先写发件箱、再尝试补发，最多 5 条、总预算约 2 秒。每次调用重新读取本机连接配置；配置就绪或网络恢复后，下一次正常上报会自动发送并分批补发旧记录，无需通知或重启角色。准确确认后移入 `.local/sent/`，原始记录保留。无人报告时不会主动轮询；需要手动补发可运行 `python E:/Code/AgentBoard/tools/report.py flush`（默认最多 100 条、15 秒）。网络不通、配置缺失或别的实例正在发送时，保持 queued 即可。详细连接与发布配置见 `docs/DEPLOYMENT.md`。
 
 网页应显示“最后上报的阶段/任务/状态＋时间”；很久没上报标待确认。自报 started 不能证明进程此刻仍在运行，异常退出也可能来不及 stopped。

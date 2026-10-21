@@ -1,4 +1,4 @@
-"""Lightweight, offline-first agent event entry point; no cloud transport yet."""
+"""Lightweight, offline-first agent event entry point with optional HTTP delivery."""
 
 import argparse
 import json
@@ -8,6 +8,8 @@ import sys
 import tomllib
 import uuid
 from datetime import datetime, timezone
+
+from transport import flush_outbox
 
 ROOT = Path(__file__).resolve().parents[1]
 ROLES = ("game-producer", "game-tech-lead", "game-developer", "game-verifier")
@@ -63,7 +65,22 @@ def enqueue(context, kind, summary, evidence=(), verdict=None):
     if verdict:
         event["verdict"] = verdict
     atomic_json(data_root() / "outbox" / f"{event['event_id']}.json", event)
-    return {"delivery": "queued", "run_id": context["run_id"], "event_id": event["event_id"], "event": kind}
+    sent = flush_outbox(ROOT, data_root(), preferred=event["event_id"])
+    result = {
+        "delivery": "sent" if event["event_id"] in sent["sent"] else "queued",
+        "run_id": context["run_id"], "event_id": event["event_id"], "event": kind,
+    }
+    if sent["errors"]:
+        result["transport"] = sent["errors"][0]
+    return result
+
+
+def flush(args):
+    result = flush_outbox(ROOT, data_root(), limit=args.limit, budget=args.budget)
+    return {
+        "delivery": "sent" if result["sent"] and result["status"] == "complete" else "queued",
+        "transport": result,
+    }
 
 
 def begin(args):
@@ -115,8 +132,22 @@ def nonempty(value):
     return value
 
 
+def positive_limit(value):
+    number = int(value)
+    if not 1 <= number <= 1000:
+        raise argparse.ArgumentTypeError("必须在 1 到 1000 之间")
+    return number
+
+
+def positive_budget(value):
+    number = float(value)
+    if not 0 < number <= 30:
+        raise argparse.ArgumentTypeError("必须大于 0 且不超过 30 秒")
+    return number
+
+
 def main():
-    parser = argparse.ArgumentParser(description="AgentBoard 关键事件上报（当前本地排队，不联网）")
+    parser = argparse.ArgumentParser(description="AgentBoard 关键事件上报（先本地排队，配置后短时自动发送）")
     commands = parser.add_subparsers(dest="command", required=True)
     start = commands.add_parser("begin", help="绑定一次角色×任务×阶段，并报告 started")
     start.add_argument("--project", type=nonempty, help="无 --parent 时必填")
@@ -135,6 +166,10 @@ def main():
     event.add_argument("--evidence", action="append", default=[], type=nonempty)
     event.add_argument("--verdict", choices=("pass", "fail", "inconclusive"))
     event.set_defaults(handler=report_event)
+    pending = commands.add_parser("flush", help="有界补发本地队列；失败保留原事件")
+    pending.add_argument("--limit", type=positive_limit, default=100)
+    pending.add_argument("--budget", type=positive_budget, default=15.0, help="总网络预算秒数，最多 30 秒")
+    pending.set_defaults(handler=flush)
     args = parser.parse_args()
     try:
         result = args.handler(args)

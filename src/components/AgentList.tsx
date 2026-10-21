@@ -8,10 +8,11 @@ export function Status({ run, now }: { run: AgentRun; now: number }) {
     <span aria-hidden="true" />{STATUS_LABELS[status]}</span>;
 }
 
-export function AgentList({ runs, total, role, status, query, now, demo, hasReports, onRole, onStatus, onQuery, onClear, onRun, onDemo, onImport }: {
+export function AgentList({ runs, total, role, status, query, now, demo, hasReports, emptyTitle, emptyDescription, connectLabel, onConnect, onRole, onStatus, onQuery, onClear, onRun, onDemo, onImport }: {
   runs: AgentRun[]; total: number; role: AgentRole | 'all'; status: DisplayStatus | 'all'; query: string; now: number;
   demo: boolean; hasReports: boolean; onRole: (v: AgentRole | 'all') => void; onStatus: (v: DisplayStatus | 'all') => void;
   onQuery: (v: string) => void; onClear: () => void; onRun: (run: AgentRun) => void; onDemo: () => void; onImport: () => void;
+  emptyTitle?: string; emptyDescription?: string; connectLabel?: string; onConnect?: () => void;
 }) {
   return <section className="panel agents-panel" aria-labelledby="agents-title">
     <div className="section-heading"><h2 id="agents-title">Agent 动态</h2><span>{total} 个{demo ? '示例' : '执行'}{runs.length !== total ? ` · 显示 ${runs.length}` : ''}</span></div>
@@ -41,9 +42,9 @@ export function AgentList({ runs, total, role, status, query, now, demo, hasRepo
       })}</ul>
     </div> : <div className="empty-state">
       {hasReports ? <SlidersHorizontal size={30} strokeWidth={1.4} /> : <Inbox size={34} strokeWidth={1.3} />}
-      <h3>{hasReports ? '没有匹配的 Agent' : '等待第一条上报'}</h3>
-      <p>{hasReports ? '试试其他角色、状态或关键词。' : '接入后，这里会显示任务、阶段和关键行动。'}</p>
-      {hasReports ? <button className="button" onClick={onClear}>清除筛选</button> : <div className="empty-actions"><button className="button primary" onClick={onDemo}>查看演示<ArrowUpRight size={15} /></button><button className="button" onClick={onImport}>导入本地上报</button></div>}
+      <h3>{hasReports ? '没有匹配的 Agent' : emptyTitle ?? '等待第一条上报'}</h3>
+      <p>{hasReports ? '试试其他角色、状态或关键词。' : emptyDescription ?? '接入后，这里会显示任务、阶段和关键行动。'}</p>
+      {hasReports ? <button className="button" onClick={onClear}>清除筛选</button> : onConnect ? <button className="button primary" onClick={onConnect}>{connectLabel ?? '连接设置'}</button> : <div className="empty-actions"><button className="button primary" onClick={onDemo}>查看演示<ArrowUpRight size={15} /></button><button className="button" onClick={onImport}>导入本地上报</button></div>}
     </div>}
     <p className="list-note">状态来自主动上报；超过 20 分钟未更新时，活动状态标为“待确认”。</p>
   </section>;

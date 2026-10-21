@@ -1,42 +1,29 @@
 # AgentBoard 架构
 
-AgentBoard 统一展示 3Match、CatAndDog、IncrementalXxx 的阶段、任务、角色和重要事件。Agent 主动报告；网页呈现报告与时效，不推断 Codex 的内部运行状态。
+四角色 → `tools/report.py` → 本机 outbox → 鉴权 HTTPS Edge Function → Postgres 事件与投影 → Auth + RLS 查询 / Realtime → GitHub Pages。
 
-## 边界
+游戏的 STATE/路线图仍是阶段权威。数据库展示报告，不采集对话或 Codex 私有数据库，不推断进程状态。
 
-- `agents/`、`tools/`、`tests/`、`projects.toml`：角色对话负责的角色提示、上报协议、Python 工具与配置。接入前先读 `agents/WORKFLOW.md`，不另起一套事件字段。
-- `src/`：React + TypeScript 网页、状态投影和导入测试。演示数据按需加载，默认空态；真实本地导入与演示分开。
-- `.github/workflows/pages.yml`：检查、构建与 GitHub Pages 发布。Pages 只运行静态文件，不承担上报接收端。
-- `docs/STATE.md`：本项目当前进度、验证与下一步；三个游戏的阶段权威仍是各项目的 STATE 和路线图。
+## 事件和状态
 
-当前数据流：四角色 → `tools/report.py` → `.local/outbox/*.json` → 用户多选文件 → 浏览器内校验/投影。刷新后清除，每批导入替换全部导入数据。最多 500 文件，单文件 256KB、总计 10MB；任一文件无效整批拒绝，保留此前数据。
+协议见 `agents/WORKFLOW.md`。v1 事件包含完整执行上下文；event_id 幂等，相同 ID/内容重复确认，不同内容拒绝。run 的项目、角色、任务、阶段、父执行不可变。按客户端微秒时间+event_id排序，服务端另记 received_at；乱序到达仍正确投影。
 
-目标数据流：角色 → 同一轻量入口 → Supabase → 网页只读查询/订阅。GitHub 存代码和部署产物，事件数据不通过 commit/push 同步。角色协议 v1 已接入本地导入；Supabase 表、接收端和订阅留待后续实现。用户要求当前仅本地，不创建远端或发布。
+本机原子写入，准确 ACK 后移至 sent。多进程非阻塞锁避免抢发；自动最多 5 条 / 约 2 秒，失败不影响游戏开发。显式 flush 默认 100 条 / 15 秒。没有常驻进程，没有新报告时不主动轮询。
 
-`src/data/report-import.ts` 校验 v1 事件、按 event_id 去重，并以微秒时间与 event_id 排序。run 上下文不可变；由事件生成执行状态和关键事件，只有制作人可更新项目级阶段。四角色支持 producer → tech-lead → developer 及 producer → verifier 的父执行关系，兼容旧 developer 的 lead 标记。UI 不依赖 reporter 内部存储结构之外的 Codex 信息。
+数据库保留 append-only 事件和完整 run/project 投影；快照只含最近 200 条历史，但 run 状态不依赖截断历史。只有 producer 更新项目阶段；checkpoint 保留阻塞/结论，submitted 不等于通过，停止后保留验收结论；活动报告超 20 分钟标待确认。
 
-## 状态语义
+## 权限
 
-大阶段、小阶段来自游戏项目文档；角色工作状态和验收结果单独显示。开发提交不等于验收通过，完成任务不自动推进游戏阶段。
+静态包只有公开 URL/publishable key。未登录可打开外壳，不能读实际进度。随机访问码服务端只存 SHA-256；Edge 验证后用内部地址生成一次性 Auth 登录令牌并交换标准会话，不发送邮件。访问码不保存到浏览器。
 
-启动、任务接领、关键产物或决策、阻塞、解除阻塞、提交、验收和停止属于重要事件。每次普通工具调用不产生看板事件。时间戳表示最近报告，过期报告显示“待确认”，不能认定 Agent 死亡或仍在工作。
+数据 SELECT 必须有 membership，普通 authenticated 身份不会自动获权。成员表仅本人可读，浏览器没有写入权限；服务 RPC 仅授权 service_role。四个 writer token 分角色、限三个项目，服务端不能信任本地 --role。private 表/函数不暴露，不用 public SECURITY DEFINER 绕过授权。
 
-无云连接时默认显示未接入/空态。只有用户显式打开演示时才显示带持久标记的示例；构建与部署不能把示例当真实报告，也不能以无错误证明已连接。
+服务密钥来自 Edge runtime，不下载到本机或前端。`.local/`、访问码、运行数据不得进入 Git。CORS 限正式域名及本机端口，凭证鉴权仍是安全边界。
 
-## Supabase 接入约束
+## 网页与发布
 
-表、鉴权、事件去重与实时订阅按最终上报协议实现，本阶段不预建假接口。浏览器侧仅使用允许公开的连接配置和受访问策略限制的读取权限；任何写入凭据、管理员密钥或本地发件箱均不得进入静态包或 Git。
+云端、演示、本地导入分离；切换停止订阅。Realtime 去抖刷新，订阅成功后补查避免首次竞态；页面恢复焦点及可见时每 30 秒补查。断线保留上次成功数据并明确提示，注销立即清除私有数据。
 
-## 构建与发布
+React + Vite + TypeScript。PR 只读检查，main 构建部署；部署 job 单独授予 pages/id-token 权限。helper 自动生成 `/AgentBoard/` 基址。仓库变量仅公开连接配置。账号已有自定义域名用于项目 Pages，强制 HTTPS。
 
-Node.js 22.14+、Python 3.11+；CI 使用 Node 24 和 Ubuntu 的 Python 3。运行 `npm ci`、`npm run check`、`npm run build`，输出 `dist/`。
-
-Pages workflow 从 `GITHUB_REPOSITORY` 计算 `VITE_BASE_PATH`：普通项目仓库为 `/仓库名/`，`owner.github.io` 为 `/`。Vite 配置读取此环境变量；内部链接和静态资源使用相同基址，避免子路径白屏。首版无需服务端路由。
-
-PR 只运行只读检查与构建；仅 main 推送或在 main 手动触发时上传并部署 Pages，写权限只授予部署 job。启用远端发布前，仓库的 Pages 发布源需设为 GitHub Actions；尚未运行远端 workflow 时不能宣称部署成功。
-
-## 验证
-
-类型与网页测试由 `npm run check` 执行；生产构建及仓库子路径预览检查静态资源。浏览器验收覆盖项目切换、筛选、详情、空态、演示标记和窄屏。角色工具修改另跑 Python 测试；不为未改动的角色逻辑重复造测试。
-
-发布配置依据：[GitHub Pages 官方工作流](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)、[setup-node](https://github.com/actions/setup-node)、[Vite base](https://vite.dev/config/shared-options.html#base)。
+测试涵盖领域投影、真实 Python CLI 合同、隔离 HTTP 传输和数据库/浏览器端到端验证。结果见 `docs/STATE.md`，维护见 `docs/DEPLOYMENT.md`。
