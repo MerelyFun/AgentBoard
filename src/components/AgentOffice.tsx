@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { UsersRound } from 'lucide-react';
 import {
-  PROJECTS, STATUS_LABELS, formatAbsoluteTime, statusForRun,
+  STATUS_LABELS, formatAbsoluteTime, statusForRun,
   type AgentRun, type Project, type ProjectId,
 } from '../domain/board';
 import { getAgentIdentity } from '../domain/presentation';
@@ -9,6 +9,7 @@ import { Pagination, usePagination } from './Pagination';
 import './agent-office.css';
 
 interface AgentOfficeProps {
+  projects: readonly Project[];
   runs: AgentRun[];
   identityRuns: AgentRun[];
   now: number;
@@ -16,6 +17,10 @@ interface AgentOfficeProps {
   projectId?: ProjectId | 'all';
   viewKey?: string;
   onRun: (run: AgentRun) => void;
+}
+
+function projectName(project: Project) {
+  return project.name?.trim() || project.gameName?.trim() || project.id;
 }
 
 /** Seat direction follows the shared desk; appearance follows the real instance. */
@@ -69,7 +74,7 @@ function DeskIsland({ project, occupants, index, identityRuns, now, onRun }: {
   return <section
     className={`office-island${occupants.length === 0 ? ' office-island-empty' : ''}`}
     data-project={project.id}
-    aria-label={`${project.name} 第 ${index + 1} 桌共享工位`}
+    aria-label={`${projectName(project)} 第 ${index + 1} 桌共享工位`}
   >
     <div className="office-island-scene">
       <h3 className="office-desk-number">共享桌 {String(index + 1).padStart(2, '0')}</h3>
@@ -93,7 +98,7 @@ function subscribeOfficeSize(onChange: () => void) {
   return () => queries.forEach((query) => query.removeEventListener('change', onChange));
 }
 
-export function AgentOffice({ runs, identityRuns, now, demo, projectId = 'all', viewKey = '', onRun }: AgentOfficeProps) {
+export function AgentOffice({ projects, runs, identityRuns, now, demo, projectId = 'all', viewKey = '', onRun }: AgentOfficeProps) {
   const [chosenProject, setChosenProject] = useState<ProjectId | null>(null);
   useEffect(() => {
     setChosenProject(null);
@@ -105,9 +110,10 @@ export function AgentOffice({ runs, identityRuns, now, demo, projectId = 'all', 
     return counts;
   }, [runs]);
   // An automatic choice follows the first nonempty project. A deliberate empty choice stays visible.
-  const currentId = projectId !== 'all' ? projectId : chosenProject
-    ?? PROJECTS.find((project) => projectCounts.get(project.id))?.id ?? PROJECTS[0].id;
-  const project = PROJECTS.find((item) => item.id === currentId)!;
+  const currentId = projectId !== 'all' ? projectId
+    : projects.find((item) => item.id === chosenProject)?.id
+      ?? projects.find((item) => projectCounts.get(item.id))?.id ?? projects[0]?.id;
+  const project = projects.find((item) => item.id === currentId);
   const occupants = useMemo(() => runs.filter((run) => run.projectId === currentId)
     // Stable instance ordering prevents report timestamps from continually shuffling seats.
     .sort((left, right) => (left.instanceId || left.id).localeCompare(right.instanceId || right.id)
@@ -117,15 +123,16 @@ export function AgentOffice({ runs, identityRuns, now, demo, projectId = 'all', 
   const islands = Array.from({ length: Math.ceil(visibleRuns.length / 4) }, (_, index) => ({
     occupants: visibleRuns.slice(index * 4, index * 4 + 4), index: Math.floor(pager.startIndex / 4) + index,
   }));
+  if (!project) return null;
   return <section className="office-panel" aria-label="Agent 办公室">
     <div className="office-heading">
       <div className="office-heading-copy">
-        <div className="office-title"><UsersRound size={20} aria-hidden="true" /><h2>项目办公室 <span>{project.name}</span></h2>{demo ? <span className="office-demo-label">演示数据</span> : null}</div>
+        <div className="office-title"><UsersRound size={20} aria-hidden="true" /><h2>项目办公室 <span title={projectName(project)}>{projectName(project)}</span></h2>{demo ? <span className="office-demo-label">演示数据</span> : null}</div>
         <p>{occupants.length} 个活跃执行 · 已应用全局筛选 · 点击工位查看任务</p>
       </div>
       {projectId === 'all' ? <nav className="office-project-tabs" aria-label="办公室项目视图">
-        {PROJECTS.map((item) => <button key={item.id} type="button" aria-label={`${item.name} 办公室，${projectCounts.get(item.id) ?? 0} 个活跃执行`} title={item.name} aria-pressed={currentId === item.id} onClick={() => setChosenProject(item.id)}>
-          <span className="office-tab-mark" style={{ background: item.color }} aria-hidden="true" /><span className="office-tab-name">{item.name}</span><span className="office-tab-count">{projectCounts.get(item.id) ?? 0}</span>
+        {projects.map((item) => <button key={item.id} type="button" aria-label={`${projectName(item)} 办公室，${projectCounts.get(item.id) ?? 0} 个活跃执行`} title={projectName(item)} aria-pressed={currentId === item.id} onClick={() => setChosenProject(item.id)}>
+          <span className="office-tab-mark" style={{ background: item.color ?? 'var(--accent)' }} aria-hidden="true" /><span className="office-tab-name">{projectName(item)}</span><span className="office-tab-count">{projectCounts.get(item.id) ?? 0}</span>
         </button>)}
       </nav> : null}
     </div>

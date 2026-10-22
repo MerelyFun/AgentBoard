@@ -86,6 +86,17 @@ describe('board filters', () => {
     expect(filterRuns(runs, { projectId: 'all', role: 'all', status: 'all', query: '  ' }, NOW)).toEqual(runs);
   });
 
+  it('searches names from the current project list, including newly added projects', () => {
+    const run = { ...snapshot().runs[0], projectId: 'new-project' };
+    const projects = [{ id: 'new-project', name: 'FourthProject', gameName: '新世界' }];
+    expect(filterRuns([run], { projectId: 'new-project', query: 'FourthProject 新世界' }, NOW, projects)).toEqual([run]);
+    expect(filterRuns([run], { query: '新世界' }, NOW, [])).toEqual([]);
+    const renamed = [{ ...PROJECTS[0], name: 'NewTitle', gameName: '新名字' }];
+    const knownRun = { ...run, projectId: renamed[0].id };
+    expect(filterRuns([knownRun], { query: '新名字' }, NOW, renamed)).toEqual([knownRun]);
+    expect(filterRuns([knownRun], { query: '星灯魔女' }, NOW, renamed)).toEqual([]);
+  });
+
   it('preserves the source data when filtering and sorting', () => {
     const data = snapshot();
     const original = structuredClone(data);

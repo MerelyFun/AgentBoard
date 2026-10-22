@@ -4,8 +4,8 @@ import { RoleAvatar } from './AgentIdentity';
 import { Pagination, usePagination } from './Pagination';
 import { getAgentIdentity } from '../domain/presentation';
 import { ACTIVITY_SCOPE_LABELS, type ActivityScope } from '../domain/activity';
-import { PROJECTS, STATUS_LABELS, formatAbsoluteTime, formatRelativeTime, statusForRun,
-  type AgentRun } from '../domain/board';
+import { STATUS_LABELS, formatAbsoluteTime, formatRelativeTime, statusForRun,
+  type AgentRun, type Project } from '../domain/board';
 
 export function Status({ run, now }: { run: AgentRun; now: number }) {
   const status = statusForRun(run, now);
@@ -13,8 +13,8 @@ export function Status({ run, now }: { run: AgentRun; now: number }) {
     <span aria-hidden="true" />{STATUS_LABELS[status]}</span>;
 }
 
-export function AgentList({ runs, identityRuns, total, now, demo, hasReports, scope, onShowAll, emptyTitle, emptyDescription, connectLabel, onConnect, onClear, onRun, onDemo, onImport, viewKey = '' }: {
-  runs: AgentRun[]; identityRuns: AgentRun[]; total: number; now: number;
+export function AgentList({ runs, identityRuns, projects, total, now, demo, hasReports, scope, onShowAll, emptyTitle, emptyDescription, connectLabel, onConnect, onClear, onRun, onDemo, onImport, viewKey = '' }: {
+  runs: AgentRun[]; identityRuns: AgentRun[]; projects: readonly Project[]; total: number; now: number;
   demo: boolean; hasReports: boolean; onClear: () => void; onRun: (run: AgentRun) => void; onDemo: () => void; onImport: () => void;
   emptyTitle?: string; emptyDescription?: string; connectLabel?: string; onConnect?: () => void;
   scope: ActivityScope; onShowAll: () => void;
@@ -30,11 +30,11 @@ export function AgentList({ runs, identityRuns, total, now, demo, hasReports, sc
     {runs.length ? <><div className="agent-table" ref={tableRef} role="region" aria-label="本页 Agent 执行名单，可滚动查看更多" tabIndex={0}>
       <div className="table-heading"><span>Agent</span><span>任务与阶段</span><span>状态 / 最后上报</span></div>
       <ul className="agent-rows">{visibleRuns.map((run) => {
-        const project = PROJECTS.find((p) => p.id === run.projectId)!;
+        const project = projects.find((p) => p.id === run.projectId);
         const identity = getAgentIdentity(run, identityRuns);
         return <li key={run.id}><button className="agent-row" onClick={() => onRun(run)} aria-label={`查看 ${identity.label} · ${run.task}`}>
           <span className="run-identity"><RoleAvatar role={run.role} />
-            <span className="run-name"><strong>{identity.roleLabel}</strong><code title={`${identity.idLabel}：${identity.fullId}`}>{identity.shortId}</code><small>{project.name}</small></span>
+            <span className="run-name"><strong>{identity.roleLabel}</strong><code title={`${identity.idLabel}：${identity.fullId}`}>{identity.shortId}</code><small>{project?.name ?? run.projectId}</small></span>
           </span>
           <span className="run-work" title={`${run.task} · ${run.stage.id} · ${run.stage.name} / ${run.step.id} · ${run.step.name}`}><strong className="run-task">{run.task}</strong>
             <span className="run-stage"><span>{run.stage.id} · {run.stage.name}</span><small>{run.step.id} · {run.step.name}</small></span>

@@ -23,6 +23,20 @@ Deno.test('role credentials cannot impersonate another role or project', () => {
   assert(!writerAllows(event, { role: 'game-developer', project_ids: ['3match'] }));
   assert(!writerAllows(event, { role: 'game-producer', project_ids: ['cat-and-dog'] }));
 });
+Deno.test('new project IDs require explicit writer scope without broadening existing tokens', () => {
+  for (const project_id of ['fourth-project', '项目四', 'x'.repeat(200), '🚀'.repeat(100)]) {
+    const event = validateReport({ ...base(), project_id });
+    assert(event.project_id === project_id);
+    assert(writerAllows(event, { role: 'game-producer', project_ids: [project_id] }));
+    assert(!writerAllows(event, { role: 'game-producer', project_ids: ['3match', 'cat-and-dog', 'incremental-xxx'] }));
+    assert(!writerAllows(event, { role: 'game-developer', project_ids: [project_id] }));
+  }
+});
+Deno.test('project ID limits match browser and import validation', () => {
+  for (const project_id of ['', 'all', ' leading', 'trailing ', 'two words', 'tab\tproject', 'line\nproject', 'x\u0000y', 'x\u001fy', 'x\u007fy', 'x\u00a0y', 'x\ufeffy', 'x'.repeat(201), '🚀'.repeat(101), null, 4]) {
+    throws(() => validateReport({ ...base(), project_id }));
+  }
+});
 Deno.test('rejects unknown/missing fields, bad schema, limits and UUIDs', () => {
   throws(() => validateReport({ ...base(), extra: true }));
   throws(() => validateReport({ ...base(), schema_version: 2 }));

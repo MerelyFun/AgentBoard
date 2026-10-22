@@ -1,4 +1,10 @@
-export type ProjectId = '3match' | 'cat-and-dog' | 'incremental-xxx';
+export type ProjectId = string;
+
+/** Project IDs are data, rather than a fixed list of the first three projects. */
+export function isProjectId(value: unknown): value is ProjectId {
+  return typeof value === 'string' && value.length > 0 && value.length <= 200
+    && value !== 'all' && !/[\s\u0000-\u001f\u007f]/.test(value);
+}
 export const AGENT_ROLES = [
   'game-producer', 'game-tech-lead', 'game-developer', 'game-verifier',
   'game-art-lead', 'game-asset-artist', 'game-ui-artist', 'game-vfx-artist',
@@ -145,6 +151,7 @@ export function filterRuns(
   runs: readonly AgentRun[],
   filters: RunFilters = {},
   now: Now = Date.now(),
+  projects: readonly Project[] = PROJECTS,
 ): AgentRun[] {
   const terms = (filters.query ?? '').trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
   return runs.filter((run) => {
@@ -153,7 +160,7 @@ export function filterRuns(
     if (filters.role && filters.role !== 'all' && run.role !== filters.role) return false;
     if (filters.status && filters.status !== 'all' && status !== filters.status) return false;
     if (!terms.length) return true;
-    const project = PROJECTS.find((item) => item.id === run.projectId);
+    const project = projects.find((item) => item.id === run.projectId);
     const searchable = [
       run.id, run.projectId, project?.name, project?.gameName,
       run.role, ROLE_LABELS[run.role], run.label, run.task,

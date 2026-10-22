@@ -73,6 +73,17 @@ describe('event ownership and stable agent identities', () => {
 });
 
 describe('timeline filters', () => {
+  it('uses dynamic project names consistently for runs and events', () => {
+    const run = makeRun({ projectId: 'new-project' });
+    const event = makeEvent({ projectId: 'new-project' });
+    const projects = [{ id: 'new-project', name: 'FourthProject', gameName: '新世界' }];
+    const filters = { projectId: 'new-project', query: 'FourthProject 新世界 aaaa…1111' };
+    expect(filterBoardRuns([run], filters, NOW, projects)).toEqual([run]);
+    expect(filterBoardEvents([event], [run], filters, NOW, projects)).toEqual([event]);
+    expect(filterBoardRuns([run], filters, NOW, [])).toEqual([]);
+    expect(filterBoardEvents([event], [run], filters, NOW, [])).toEqual([]);
+  });
+
   it('finds the same instance and short identifier in both lists and events after filtering or reordering', () => {
     const first = makeRun({ task: '战斗碰撞' });
     const second = makeRun({ id: 'run-2', instanceId: 'aaaa0000-0000-0000-0000-000000002222' });
