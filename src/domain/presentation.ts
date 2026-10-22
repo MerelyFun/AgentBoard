@@ -1,6 +1,6 @@
 import {
   EVENT_LABELS, PROJECTS, ROLE_LABELS, STATUS_LABELS, filterRuns, sortEvents, statusForRun,
-  type AgentRun, type BoardEvent, type Now, type RunFilters, type TimeValue,
+  type AgentRun, type BoardEvent, type Now, type Project, type RunFilters, type TimeValue,
 } from './board';
 
 export interface AgentIdentity {
@@ -56,20 +56,22 @@ export function getAgentIdentity(source: AgentRun | BoardEvent, runs: readonly A
 /** The global search also accepts the exact agent identifiers shown in the UI. */
 export function filterBoardRuns(
   runs: readonly AgentRun[], filters: RunFilters = {}, now: Now = Date.now(),
+  projects: readonly Project[] = PROJECTS,
 ): AgentRun[] {
   const terms = (filters.query ?? '').trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
-  const filtered = filterRuns(runs, { ...filters, query: '' }, now);
+  const filtered = filterRuns(runs, { ...filters, query: '' }, now, projects);
   if (!terms.length) return filtered;
   return filtered.filter((run) => {
     const identity = getAgentIdentity(run, runs);
     const identifiers = [identity.fullId, identity.shortId, identity.label].join(' ').toLocaleLowerCase();
-    return terms.every((term) => identifiers.includes(term) || filterRuns([run], { query: term }, now).length > 0);
+    return terms.every((term) => identifiers.includes(term) || filterRuns([run], { query: term }, now, projects).length > 0);
   });
 }
 
 /** Filter events against the complete run roster, never a pre-filtered list of runs. */
 export function filterBoardEvents(
   events: readonly BoardEvent[], runs: readonly AgentRun[], filters: RunFilters = {}, now: Now = Date.now(),
+  projects: readonly Project[] = PROJECTS,
 ): BoardEvent[] {
   const terms = (filters.query ?? '').trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
   return events.filter((event) => {
@@ -80,7 +82,7 @@ export function filterBoardEvents(
     // An unassociated event does not establish any current run status, even "unknown".
     if (filters.status && filters.status !== 'all' && status !== filters.status) return false;
     if (!terms.length) return true;
-    const project = PROJECTS.find((item) => item.id === event.projectId);
+    const project = projects.find((item) => item.id === event.projectId);
     const identity = getAgentIdentity(event, runs);
     const searchable = [
       event.id, event.summary, event.projectId, project?.name, project?.gameName,

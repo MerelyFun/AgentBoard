@@ -1,5 +1,5 @@
 import { createClient, type RealtimeChannel, type Session, type SupabaseClient } from '@supabase/supabase-js';
-import { PROJECTS, ROLE_LABELS, STATUS_LABELS, type BoardSnapshot } from '../domain/board';
+import { isProjectId, ROLE_LABELS, STATUS_LABELS, type BoardSnapshot } from '../domain/board';
 import type { CloudConfig } from './cloud-config';
 
 export type CloudPhase = 'signed-out' | 'connecting' | 'live' | 'reconnecting' | 'offline' | 'error';
@@ -13,17 +13,20 @@ export interface CloudState {
 export const INITIAL_CLOUD_STATE: CloudState = { phase: 'connecting', snapshot: null, userId: null, lastSyncedAt: null, error: '' };
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const string = (value: unknown): value is string => typeof value === 'string';
+const nonempty = (value: unknown): value is string => string(value) && value.trim().length > 0;
 const stage = (value: unknown) => record(value) && string(value.id) && string(value.name);
-const projectIds = new Set(PROJECTS.map((project) => project.id as string));
 const evidence = (value: unknown) => value === undefined || (Array.isArray(value) && value.every(string));
+const uniqueIds = (items: Record<string, unknown>[]) => new Set(items.map((item) => item.id)).size === items.length;
 
 /** Reject malformed responses before they can be mistaken for a valid empty board. */
 export function readSnapshot(value: unknown): BoardSnapshot {
   if (!record(value) || !Array.isArray(value.projects) || !Array.isArray(value.runs) || !Array.isArray(value.events)) throw new Error('云端数据格式异常，请重试。');
-  const projects = value.projects.every((p) => record(p) && projectIds.has(String(p.id)) && string(p.name) && string(p.gameName) && (p.stage === undefined || stage(p.stage)) && (p.step === undefined || stage(p.step)));
-  const runs = value.runs.every((r) => record(r) && string(r.id) && projectIds.has(String(r.projectId)) && string(r.role) && Object.hasOwn(ROLE_LABELS, r.role) && string(r.label) && string(r.task) && stage(r.stage) && stage(r.step) && string(r.status) && Object.hasOwn(STATUS_LABELS, r.status) && string(r.lastReportedAt) && Number.isFinite(Date.parse(r.lastReportedAt)) && string(r.summary) && evidence(r.evidence));
-  const events = value.events.every((e) => record(e) && string(e.id) && projectIds.has(String(e.projectId)) && string(e.role) && Object.hasOwn(ROLE_LABELS, e.role) && string(e.kind) && string(e.summary) && string(e.at) && Number.isFinite(Date.parse(e.at)) && evidence(e.evidence));
-  if (!projects || !runs || !events || value.projects.length !== 3 || new Set(value.projects.map((p) => p.id)).size !== 3) throw new Error('云端数据格式异常，请重试。');
+  const projects = value.projects.every((p) => record(p) && isProjectId(p.id) && nonempty(p.name) && nonempty(p.gameName) && (p.stage === undefined || stage(p.stage)) && (p.step === undefined || stage(p.step)));
+  if (!projects || !uniqueIds(value.projects)) throw new Error('云端数据格式异常，请重试。');
+  const projectIds = new Set(value.projects.map((project) => project.id));
+  const runs = value.runs.every((r) => record(r) && nonempty(r.id) && isProjectId(r.projectId) && projectIds.has(r.projectId) && string(r.role) && Object.hasOwn(ROLE_LABELS, r.role) && string(r.label) && string(r.task) && stage(r.stage) && stage(r.step) && string(r.status) && Object.hasOwn(STATUS_LABELS, r.status) && string(r.lastReportedAt) && Number.isFinite(Date.parse(r.lastReportedAt)) && string(r.summary) && evidence(r.evidence));
+  const events = value.events.every((e) => record(e) && nonempty(e.id) && isProjectId(e.projectId) && projectIds.has(e.projectId) && string(e.role) && Object.hasOwn(ROLE_LABELS, e.role) && string(e.kind) && string(e.summary) && string(e.at) && Number.isFinite(Date.parse(e.at)) && evidence(e.evidence));
+  if (!runs || !events || !uniqueIds(value.runs) || !uniqueIds(value.events)) throw new Error('云端数据格式异常，请重试。');
   return value as unknown as BoardSnapshot;
 }
 

@@ -1,6 +1,6 @@
 import {
-  AGENT_ROLES, PROJECTS, ROLE_LABELS,
-  type AgentRole, type AgentRun, type BoardSnapshot, type Now, type ProjectId,
+  AGENT_ROLES, isProjectId, PROJECTS, ROLE_LABELS,
+  type AgentRole, type AgentRun, type BoardSnapshot, type Now, type Project, type ProjectId,
   type RunStatus, type StageRef, type VerificationVerdict,
 } from '../domain/board';
 
@@ -122,7 +122,8 @@ function parseReport(file: { name: string; text: string }): ParsedReport {
   if (value.schema_version !== 1) fail(file.name, '仅支持 schema_version 1');
   const role = choice(value.role, AGENT_ROLES, file.name, 'role');
   const kind = choice(value.kind, KINDS, file.name, 'kind');
-  const projectId = choice(value.project_id, PROJECTS.map((project) => project.id), file.name, 'project_id');
+  if (!isProjectId(value.project_id)) fail(file.name, 'project_id 必须是最多 200 字符、不含空白的项目标识，不能为 all');
+  const projectId = value.project_id;
   if (typeof value.lead !== 'boolean') fail(file.name, 'lead 必须是布尔值');
   if (value.lead && role !== 'game-developer' && role !== 'game-tech-lead') {
     fail(file.name, '仅 game-developer 或 game-tech-lead 可以 lead=true');
@@ -202,12 +203,17 @@ export function importReportFiles(files: Array<{ name: string; text: string }>, 
     if (!existing) unique.set(parsed.event.event_id, parsed);
   }
   const chronological = [...unique.values()].sort(compareReports);
-  const projects = PROJECTS.map((project) => ({ ...project }));
+  const projects = new Map<ProjectId, Project>();
   const runs = new Map<string, AgentRun>();
   const identities = new Map<string, string>();
   const lastRunEvent = new Map<string, ParsedReport>();
   for (const parsed of chronological) {
     const event = parsed.event;
+    if (!projects.has(event.project_id)) {
+      const known = PROJECTS.find((project) => project.id === event.project_id);
+      projects.set(event.project_id, known ? { ...known }
+        : { id: event.project_id, name: event.project_id, gameName: event.project_id });
+    }
     const identity = runIdentity(event);
     const existingIdentity = identities.get(event.run_id);
     if (existingIdentity !== undefined && existingIdentity !== identity) {
@@ -228,7 +234,7 @@ export function importReportFiles(files: Array<{ name: string; text: string }>, 
     });
     lastRunEvent.set(event.run_id, parsed);
     if (event.role === 'game-producer') {
-      const project = projects.find((item) => item.id === event.project_id)!;
+      const project = projects.get(event.project_id)!;
       project.stage = { ...event.milestone };
       project.step = { ...event.step };
       project.summary = event.summary;
@@ -236,7 +242,7 @@ export function importReportFiles(files: Array<{ name: string; text: string }>, 
     }
   }
   return {
-    projects,
+    projects: [...projects.values()],
     runs: [...runs.values()].sort((a, b) => compareReports(lastRunEvent.get(b.id)!, lastRunEvent.get(a.id)!)),
     events: [...chronological].reverse().map(({ event }) => ({
       id: event.event_id, projectId: event.project_id, runId: event.run_id,

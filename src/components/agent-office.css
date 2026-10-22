@@ -18,18 +18,18 @@
   isolation: isolate;
   min-height: 460px;
   background-color: #f4e6d0;
-  background-image: url('../assets/studio-room-v2.webp');
-  background-position: center center;
-  background-size: cover;
+  background-image: repeating-linear-gradient(33deg, transparent 0 73px, #d0bfa333 74px, transparent 75px), repeating-linear-gradient(147deg, transparent 0 85px, #d0bfa32b 86px, transparent 87px);
   border-block: 1px solid #e9e2d7;
 }
-.office-islands { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; max-width: 1120px; min-height: 460px; margin: auto; padding: 140px 24px 29px; }
+.office-floor::before { content: ''; position: absolute; z-index: -1; inset: 0 0 auto; height: 520px; background: url('../assets/studio-room-v2.webp') center top / cover no-repeat; -webkit-mask-image: linear-gradient(#000 0%, #000 80%, transparent 100%); mask-image: linear-gradient(#000 0%, #000 80%, transparent 100%); pointer-events: none; }
+.office-islands { position: relative; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); align-items: start; gap: 42px 0; max-width: 1120px; min-height: 460px; margin: auto; padding: 140px 24px 29px; }
 .office-island { position: relative; width: min(100%, 320px); min-width: 0; justify-self: center; margin-top: 0; }
 .office-island:nth-child(3n + 2) { margin-top: 45px; }
 .office-island:nth-child(3n) { margin-top: 16px; }
 .office-island-scene { position: relative; width: 100%; aspect-ratio: 320 / 260; }
 .office-project-plaque { position: absolute; z-index: 6; top: -18px; left: 50%; display: flex; align-items: center; gap: 7px; max-width: 100%; padding: 6px 10px; border: 1px solid #fff; border-radius: 9px; background: #fffffff0; box-shadow: 0 3px 9px #655c4712; color: #3c4c46; font-size: 12px; font-weight: 650; white-space: nowrap; transform: translateX(-50%); }
 .office-project-plaque small { color: #9caaa0; font-size: 10px; }
+.office-project-plaque > span:not(.office-project-mark) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .office-project-mark { flex: none; width: 10px; height: 10px; border-radius: 4px; }
 .office-shared-desk { position: absolute; z-index: 3; top: 10%; left: 0; width: 100%; aspect-ratio: 3 / 2; background: url('../assets/studio-desk-v2.webp') center / contain no-repeat; pointer-events: none; }
 .office-workstations { position: absolute; inset: 0; padding: 0; margin: 0; list-style: none; }
@@ -85,8 +85,8 @@
   .office-heading h2 { font-size: 13px; }
   .office-desktop-count { display: none; }
   .office-mobile-count { display: inline; }
-  .office-project-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding: 0 10px 10px; }
-  .office-project-tabs button { display: flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; min-height: 35px; padding: 7px 4px; border: 1px solid transparent; border-radius: 7px; background: #f8faf8; color: #98a29c; font-size: 11px; white-space: nowrap; }
+  .office-project-tabs { display: flex; gap: 5px; padding: 0 10px 10px; overflow-x: auto; scrollbar-width: thin; }
+  .office-project-tabs button { display: flex; flex: 1 0 auto; align-items: center; justify-content: center; gap: 5px; min-width: 90px; max-width: 190px; min-height: 40px; padding: 7px 10px; border: 1px solid transparent; border-radius: 7px; background: #f8faf8; color: #6f8175; font-size: 11px; white-space: nowrap; }
   .office-project-tabs button[aria-pressed='true'] { border-color: #d7eae0; background: #edf7f1; color: #397d62; font-weight: 600; }
   .office-project-tabs button > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .office-tab-mark { flex: none; width: 6px; height: 6px; border-radius: 50%; }

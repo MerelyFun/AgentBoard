@@ -1,7 +1,7 @@
 import { Clock3, FileText } from 'lucide-react';
 import { Dialog } from './Dialog';
 import { Status } from './AgentList';
-import { EVENT_LABELS, PROJECTS, ROLE_LABELS, formatAbsoluteTime, type AgentRun, type BoardEvent } from '../domain/board';
+import { EVENT_LABELS, ROLE_LABELS, formatAbsoluteTime, type AgentRun, type BoardEvent, type Project } from '../domain/board';
 import { getAgentIdentity, resolveEventRun } from '../domain/presentation';
 import { RoleAvatar } from './AgentIdentity';
 
@@ -9,14 +9,14 @@ function Evidence({ items }: { items?: string[] }) {
   return items?.length ? <ul className="evidence-list">{items.map((item, i) => <li key={`${i}-${item}`}><FileText size={15} /><code>{item}</code></li>)}</ul> : <p className="muted">本次未附证据引用</p>;
 }
 
-export function RunDetails({ run, runs = [], events, now, demo, onClose }: {
-  run: AgentRun; runs?: AgentRun[]; events: BoardEvent[]; now: number; demo: boolean; onClose: () => void;
+export function RunDetails({ run, runs = [], projects, events, now, demo, onClose }: {
+  run: AgentRun; runs?: AgentRun[]; projects: readonly Project[]; events: BoardEvent[]; now: number; demo: boolean; onClose: () => void;
 }) {
-  const project = PROJECTS.find((p) => p.id === run.projectId)!;
+  const project = projects.find((p) => p.id === run.projectId);
   const identity = getAgentIdentity(run, runs);
   const ownEvents = events.filter((event) => resolveEventRun(event, [run]));
   return <Dialog title="执行详情" onClose={onClose} wide>
-    <div className="detail-top"><span className="muted">{project.name} / {ROLE_LABELS[run.role]}{demo ? ' · 演示数据' : ''}</span><Status run={run} now={now} /></div>
+    <div className="detail-top"><span className="muted">{project?.name ?? run.projectId} / {ROLE_LABELS[run.role]}{demo ? ' · 演示数据' : ''}</span><Status run={run} now={now} /></div>
     <div className="detail-identity"><RoleAvatar role={run.role} /><div><strong>{identity.label}</strong><code>{identity.idLabel}：{identity.fullId}</code></div></div>
     <h3 className="detail-task">{run.task}</h3>
     <div className="stage-detail"><span className="field-label">大阶段</span><strong>{run.stage.id} · {run.stage.name}</strong><span className="field-label">小阶段</span><strong>{run.step.id} · {run.step.name}</strong></div>
@@ -31,13 +31,13 @@ export function RunDetails({ run, runs = [], events, now, demo, onClose }: {
   </Dialog>;
 }
 
-export function EventDetails({ event, run, runs = [], demo, onClose }: {
-  event: BoardEvent; run?: AgentRun; runs?: AgentRun[]; demo: boolean; onClose: () => void;
+export function EventDetails({ event, run, runs = [], projects, demo, onClose }: {
+  event: BoardEvent; run?: AgentRun; runs?: AgentRun[]; projects: readonly Project[]; demo: boolean; onClose: () => void;
 }) {
   const matchedRun = run ? resolveEventRun(event, [run]) : undefined;
   const identity = getAgentIdentity(event, matchedRun ? [matchedRun, ...runs] : []);
   return <Dialog title="关键事件" onClose={onClose}>
-    <p className="muted">{PROJECTS.find((p) => p.id === event.projectId)?.name}{demo ? ' · 演示数据' : ''}</p>
+    <p className="muted">{projects.find((p) => p.id === event.projectId)?.name ?? event.projectId}{demo ? ' · 演示数据' : ''}</p>
     <div className="detail-identity"><RoleAvatar role={event.role} /><div><strong>{identity.label}</strong>{identity.fullId ? <code>{identity.idLabel}：{identity.fullId}</code> : <span className="muted">未关联执行</span>}</div></div>
     <div className="detail-event-header"><span className={`event-kind kind-${event.kind}`}>{EVENT_LABELS[event.kind] ?? event.kind}</span><time className="detail-time" dateTime={event.at}>{formatAbsoluteTime(event.at)} · 上海时间</time></div>
     <h3 className="detail-task">{event.summary}</h3>

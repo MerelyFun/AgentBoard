@@ -1,10 +1,9 @@
 export const ART_ROLES = ['game-art-lead', 'game-asset-artist', 'game-ui-artist', 'game-vfx-artist'] as const;
 export const ROLES = ['game-producer', 'game-tech-lead', 'game-developer', 'game-verifier', ...ART_ROLES] as const;
 const SUBMITTING_ROLES: readonly string[] = ['game-developer', 'game-tech-lead', ...ART_ROLES];
-export const PROJECT_IDS = ['3match', 'cat-and-dog', 'incremental-xxx'] as const;
 export const KINDS = ['started', 'checkpoint', 'blocked', 'unblocked', 'submitted', 'verification', 'stopped', 'cancelled'] as const;
 export type Role = typeof ROLES[number];
-export type ProjectId = typeof PROJECT_IDS[number];
+export type ProjectId = string;
 export interface ReportEvent {
   schema_version: 1; event_id: string; occurred_at: string; run_id: string;
   instance_id: string; parent_run_id: string | null; project_id: ProjectId;
@@ -29,6 +28,11 @@ function text(value: unknown, maximum: number): string {
 function uuid(value: unknown): string {
   if (typeof value !== 'string' || !UUID.test(value)) throw new Error('invalid_uuid');
   return value.toLowerCase();
+}
+/** Matches the browser/importer contract; registration and writer scope remain database gates. */
+function projectId(value: unknown): ProjectId {
+  if (typeof value !== 'string' || !value.length || value.length > 200 || value === 'all' || /[\s\u0000-\u001f\u007f]/.test(value)) throw new Error('invalid_project_id');
+  return value;
 }
 function choice<T extends string>(value: unknown, choices: readonly T[]): T {
   if (typeof value !== 'string' || !choices.includes(value as T)) throw new Error('invalid_choice');
@@ -66,7 +70,7 @@ export function validateReport(value: unknown): ReportEvent {
     schema_version: 1, event_id: uuid(item.event_id), occurred_at: timestamp(item.occurred_at),
     run_id: uuid(item.run_id), instance_id: text(item.instance_id, 200),
     parent_run_id: item.parent_run_id === null ? null : uuid(item.parent_run_id),
-    project_id: choice(item.project_id, PROJECT_IDS), role, lead: role === 'game-tech-lead' || item.lead,
+    project_id: projectId(item.project_id), role, lead: role === 'game-tech-lead' || item.lead,
     task_id: text(item.task_id, 200), milestone: stage(item.milestone), step: stage(item.step), kind,
     summary: text(item.summary, 2000), evidence: item.evidence.map((entry) => text(entry, 2048)),
     ...(verdict ? { verdict } : {}),

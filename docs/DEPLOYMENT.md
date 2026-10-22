@@ -14,6 +14,12 @@ Pages 使用 GitHub Actions、强制 HTTPS。main 自动检查/构建/部署；P
 
 八岗位沿用 `schema_version: 1` 和原事件字段。发布对应迁移与 ingest 校验后，前端和 reporter 均使用八种真实 role；不得依赖摘要把美术报告映射成开发。检查角色约束、父链允许关系、submitted 权限与 verifier 专用 verification 同步生效；`lead` 仅代表技术负责人，历史 developer+lead=true 仍兼容。既有运行记录保持原样，不回写角色或重建游戏进度。
 
+## 接入更多项目
+
+项目数量不再固定为三个，网页根据云端快照自动展示。先应用 `registered_projects` 迁移并部署新版 `agentboard-ingest`，再按 `supabase/register-project.example.sql` 替换占位值：登记项目 ID、显示名称等元数据，仅为需要上报该项目的 writer 显式追加授权。既有 token 的角色与项目范围不会自动改变。浏览器保持只读，不提供管理凭证或项目授权入口。
+
+使用本仓库 reporter 时，在 `projects.toml` 加入相同 ID 的项目配置（根目录、仓库、STATE 与路线图），即可使用原 `begin/event/flush` 命令。ID 长度为 1–200 个 UTF-16 码元，不能含空白/控制字符，不能为 `all`。未登记项目仍由外键拒绝，已登记但未授权项目由 Edge 和数据库双重拒绝。本地 JSON 导入可读取更多项目，未配置显示名称的项目以 ID 显示。
+
 ## 本机配置
 
 `.local/transport.json` 应配置接收地址和八种角色各自的令牌，原 Python 命令自动读取。四个美术岗位分别注册自己的服务端哈希与项目写入授权，不能复用 game-developer 身份。下列仅为占位示意，不含实际令牌；真实配置不得提交：

@@ -1,4 +1,4 @@
-import { Cat, Clock3, Gem, Sprout, TriangleAlert } from 'lucide-react';
+import { Cat, Clock3, FolderKanban, Gem, Sprout, TriangleAlert } from 'lucide-react';
 import { countRunActivity } from '../domain/activity';
 import { formatRelativeTime, statusForRun, type AgentRun, type Project, type ProjectId } from '../domain/board';
 
@@ -10,10 +10,10 @@ export function ProjectStrip({ projects, runs, selected, now, onSelect }: {
       const projectRuns = runs.filter((run) => run.projectId === project.id);
       const blocked = projectRuns.some((run) => statusForRun(run, now) === 'blocked');
       const activity = countRunActivity(projectRuns, now);
-      const ProjectIcon = project.id === '3match' ? Gem : project.id === 'cat-and-dog' ? Cat : Sprout;
+      const ProjectIcon = project.id === '3match' ? Gem : project.id === 'cat-and-dog' ? Cat : project.id === 'incremental-xxx' ? Sprout : FolderKanban;
       return <button key={project.id} className={`project-summary ${selected === project.id ? 'selected' : ''}`}
         onClick={() => onSelect(project.id)} aria-pressed={selected === project.id}>
-        <div className="project-identity"><span className="project-dot" style={{ background: project.color }} aria-hidden="true"><ProjectIcon size={18} /></span>
+        <div className="project-identity"><span className="project-dot" style={{ background: project.color ?? 'var(--accent)' }} aria-hidden="true"><ProjectIcon size={18} /></span>
           <span><strong>{project.name}</strong><small>{project.gameName}</small></span>
         </div>
         <h2>{project.stage ? <><span>{project.stage.id}</span> {project.stage.name}</> : '尚未上报阶段'}</h2>

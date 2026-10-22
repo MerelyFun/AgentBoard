@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { GitCommitHorizontal } from 'lucide-react';
-import { EVENT_LABELS, PROJECTS, formatAbsoluteTime, sortEvents, type AgentRun, type BoardEvent } from '../domain/board';
+import { EVENT_LABELS, formatAbsoluteTime, sortEvents, type AgentRun, type BoardEvent, type Project } from '../domain/board';
 import { formatEventClock, getAgentIdentity, groupEventsByDay, resolveEventRun } from '../domain/presentation';
 import { RoleAvatar } from './AgentIdentity';
 
-export function EventTimeline({ events, runs, now, demo, hasEvents = events.length > 0, onEvent }: {
-  events: BoardEvent[]; runs: AgentRun[]; now: number; demo: boolean; hasEvents?: boolean; onEvent: (event: BoardEvent) => void;
+export function EventTimeline({ events, runs, projects, now, demo, hasEvents = events.length > 0, onEvent }: {
+  events: BoardEvent[]; runs: AgentRun[]; projects: readonly Project[]; now: number; demo: boolean; hasEvents?: boolean; onEvent: (event: BoardEvent) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const ordered = sortEvents(events);
@@ -16,7 +16,7 @@ export function EventTimeline({ events, runs, now, demo, hasEvents = events.leng
     {visible.length ? <div className="timeline-groups">{groups.map((group) => <section className="timeline-day" key={group.key} aria-label={group.label}>
       <h3 className="timeline-day-heading">{group.label}<span>上海时间</span></h3>
       <ol className="timeline">{group.events.map((event) => {
-        const project = PROJECTS.find((item) => item.id === event.projectId);
+        const project = projects.find((item) => item.id === event.projectId);
         const run = resolveEventRun(event, runs);
         const identity = getAgentIdentity(event, runs);
         const action = EVENT_LABELS[event.kind] ?? event.kind;

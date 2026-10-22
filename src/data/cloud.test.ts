@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { PROJECTS, type BoardSnapshot } from '../domain/board';
+import { createDemoSnapshot } from './demo';
 import { cloudConfig } from './cloud-config';
 import { CloudBoard, readSnapshot } from './cloud';
 
@@ -74,9 +75,36 @@ describe('public cloud configuration and response boundaries', () => {
   });
   it('accepts the real empty board but rejects malformed data instead of showing an empty success', () => {
     expect(readSnapshot(snapshot())).toEqual(snapshot());
-    expect(() => readSnapshot({ projects: [], runs: [], events: [] })).toThrow(/数据格式异常/);
+    expect(readSnapshot({ projects: [], runs: [], events: [] })).toEqual({ projects: [], runs: [], events: [] });
     expect(() => readSnapshot({ ...snapshot(), runs: [{ id: 'bad' }] })).toThrow(/数据格式异常/);
     expect(() => readSnapshot({ ...snapshot(), projects: [PROJECTS[0], PROJECTS[0], PROJECTS[1]] })).toThrow(/数据格式异常/);
+  });
+
+  it('accepts one or many projects from the response without adding known projects', () => {
+    const projects = Array.from({ length: 7 }, (_, i) => ({ id: `project-${i}`, name: `Project ${i}`, gameName: `游戏 ${i}` }));
+    const demo = createDemoSnapshot();
+    const run = { ...demo.runs[0], projectId: projects[0].id };
+    const event = { ...demo.events[0], projectId: projects[0].id, runId: run.id, role: run.role };
+    for (const selected of [projects.slice(0, 1), projects]) {
+      const data = { projects: selected, runs: [run], events: [event] };
+      expect(readSnapshot(data)).toEqual(data);
+      expect(readSnapshot(data).projects.some((project) => project.id === '3match')).toBe(false);
+    }
+  });
+
+  it.each(['', ' ', ' new-project', 'new-project ', 'new\nproject', 'all', 'a'.repeat(201), 123, null])('rejects malformed project ID %j', (id) => {
+    expect(() => readSnapshot({ projects: [{ ...PROJECTS[0], id }], runs: [], events: [] })).toThrow(/数据格式异常/);
+  });
+
+  it('rejects missing project references and duplicate or empty record IDs', () => {
+    const data = createDemoSnapshot();
+    expect(() => readSnapshot({ ...data, projects: [] })).toThrow(/数据格式异常/);
+    expect(() => readSnapshot({ ...data, runs: [{ ...data.runs[0], projectId: 'missing-project' }] })).toThrow(/数据格式异常/);
+    expect(() => readSnapshot({ ...data, events: [{ ...data.events[0], projectId: 'missing-project' }] })).toThrow(/数据格式异常/);
+    expect(() => readSnapshot({ ...data, runs: [data.runs[0], data.runs[0]] })).toThrow(/数据格式异常/);
+    expect(() => readSnapshot({ ...data, events: [data.events[0], data.events[0]] })).toThrow(/数据格式异常/);
+    expect(() => readSnapshot({ ...data, runs: [{ ...data.runs[0], id: '' }] })).toThrow(/数据格式异常/);
+    expect(() => readSnapshot({ ...data, events: [{ ...data.events[0], id: ' ' }] })).toThrow(/数据格式异常/);
   });
 });
 

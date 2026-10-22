@@ -23,13 +23,30 @@ describe('local report projection', () => {
       file(event()),
       file(event({ event_id: id(2), run_id: id(101), instance_id: 'codex-thread-b', lead: true, task_id: 'M1a-ui', kind: 'submitted' })),
     ]);
-    expect(snapshot.projects).toHaveLength(3);
+    expect(snapshot.projects).toHaveLength(1);
+    expect(snapshot.projects[0]).toMatchObject({ id: 'cat-and-dog', name: 'CatAndDog', gameName: '毛球街保卫战' });
     expect(snapshot.projects.every((project) => project.stage === undefined)).toBe(true);
     expect(snapshot.runs).toHaveLength(2);
     expect(snapshot.runs.find((run) => run.id === id(100))).toMatchObject({ status: 'running', stage: { id: 'M1' }, step: { id: 'M1a' } });
     expect(snapshot.runs.find((run) => run.id === id(101))).toMatchObject({ status: 'submitted', lead: true });
     expect(snapshot.events).toHaveLength(2);
     expect(snapshot.events.every((item) => !item.id.startsWith('demo-'))).toBe(true);
+  });
+
+  it('builds the project roster from imported reports for any number of projects', () => {
+    const projectIds = ['cat-and-dog', 'new-project', 'project-3', 'project-4', 'project-5', '中文项目'];
+    const files = projectIds.map((project_id, index) => file(event({
+      event_id: id(index + 1), run_id: id(index + 100), project_id,
+      ...(project_id === 'new-project' ? { role: 'game-producer' } : {}),
+    })));
+    const snapshot = importReportFiles(files);
+    expect(snapshot.projects.map((project) => project.id)).toEqual(projectIds);
+    expect(snapshot.projects.find((project) => project.id === 'new-project')).toMatchObject({
+      name: 'new-project', gameName: 'new-project', stage: { id: 'M1' }, step: { id: 'M1a' },
+    });
+    expect(snapshot.projects.some((project) => project.id === '3match')).toBe(false);
+    expect(snapshot.runs).toHaveLength(projectIds.length);
+    expect(snapshot.events).toHaveLength(projectIds.length);
   });
 
   it('orders microseconds correctly and deduplicates exact events regardless of input order', () => {
@@ -83,13 +100,14 @@ describe('local report projection', () => {
     const snapshot = importReportFiles([file(dev), file(producer)]);
     expect(snapshot.projects.find((project) => project.id === 'cat-and-dog')!.stage).toEqual({ id: 'M0', name: '准备' });
     expect(snapshot.runs.find((run) => run.role === 'game-developer')!.stage.id).toBe('M1');
-    expect(snapshot.projects.find((project) => project.id === '3match')!.stage).toBeUndefined();
+    expect(snapshot.projects.find((project) => project.id === '3match')).toBeUndefined();
   });
 
   it('returns a clean empty snapshot and keeps source files and metadata unchanged', () => {
     const files = Object.freeze([Object.freeze(file(event()))]);
     expect(importReportFiles([...files]).events).toHaveLength(1);
     const empty = importReportFiles([]);
+    expect(empty.projects).toEqual([]);
     expect(empty.runs).toEqual([]);
     expect(empty.events).toEqual([]);
     expect(empty.projects.every((project) => project.stage === undefined)).toBe(true);
@@ -131,13 +149,17 @@ describe('local report projection', () => {
 
 describe('all-or-nothing validation', () => {
   it.each([
-    ['schema_version', 2, 'schema_version'], ['project_id', 'other-project', 'project_id'],
+    ['schema_version', 2, 'schema_version'], ['project_id', '', 'project_id'],
     ['role', 'boss', 'role'], ['kind', 'heartbeat', 'kind'], ['run_id', 'not-a-uuid', 'run_id'],
     ['occurred_at', '2026-02-30T00:00:00Z', 'occurred_at'], ['occurred_at', '2026-10-22T00:00:00', 'occurred_at'],
     ['lead', 'true', 'lead'], ['evidence', 'README.md', 'evidence'], ['summary', '', 'summary'],
   ])('rejects invalid %s and names the offending file', (field, value, message) => {
     expect(() => importReportFiles([file(event(), 'good.json'), file(event({ event_id: id(2), [field]: value }), 'broken.json')]))
       .toThrow(new RegExp(`broken\\.json.*${message}`));
+  });
+
+  it.each([' ', ' new-project', 'new-project ', 'new\nproject', 'all', 'a'.repeat(201), 123, null])('rejects malformed project identifier %j', (project_id) => {
+    expect(() => importReportFiles([file(event({ project_id }))])).toThrow(/project_id/);
   });
 
   it('rejects arrays, malformed JSON, missing fields and unknown extra fields', () => {

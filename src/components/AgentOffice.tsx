@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Circle, MousePointer2, UsersRound } from 'lucide-react';
 import {
-  PROJECTS, STATUS_LABELS, formatAbsoluteTime, statusForRun,
+  STATUS_LABELS, formatAbsoluteTime, statusForRun,
   type AgentRun, type Project, type ProjectId,
 } from '../domain/board';
 import { getAgentIdentity } from '../domain/presentation';
 import './agent-office.css';
 
 interface AgentOfficeProps {
+  projects: readonly Project[];
   runs: AgentRun[];
   identityRuns: AgentRun[];
   now: number;
@@ -72,7 +73,7 @@ function DeskIsland({ project, occupants, index, identityRuns, now, mobileVisibl
     aria-label={`${project.name} 共享工位${index > 0 ? ` ${index + 1}` : ''}`}
   >
     <div className="office-island-scene">
-      <h3 className="office-project-plaque"><span className="office-project-mark" style={{ background: project.color }} aria-hidden="true" />{project.name}{index > 0 ? <small>{index + 1}</small> : null}</h3>
+      <h3 className="office-project-plaque" title={project.name}><span className="office-project-mark" style={{ background: project.color ?? 'var(--accent)' }} aria-hidden="true" /><span>{project.name}</span>{index > 0 ? <small>{index + 1}</small> : null}</h3>
       <div className="office-shared-desk" aria-hidden="true" />
       <ul className="office-workstations">
         {occupants.map((run, seat) => <Workstation key={run.id} run={run} seat={seat} identityRuns={identityRuns} now={now} onRun={onRun} />)}
@@ -82,12 +83,10 @@ function DeskIsland({ project, occupants, index, identityRuns, now, mobileVisibl
   </section>;
 }
 
-export function AgentOffice({ runs, identityRuns, now, demo, projectId = 'all', onRun }: AgentOfficeProps) {
-  const [mobileProject, setMobileProject] = useState<ProjectId>(projectId === 'all' ? PROJECTS[0].id : projectId);
-  useEffect(() => {
-    setMobileProject(projectId === 'all' ? PROJECTS[0].id : projectId);
-  }, [projectId]);
-  const projects = PROJECTS.filter((project) => projectId === 'all' || project.id === projectId);
+export function AgentOffice({ projects: allProjects, runs, identityRuns, now, demo, projectId = 'all', onRun }: AgentOfficeProps) {
+  const [preferredProject, setPreferredProject] = useState<ProjectId | undefined>();
+  const projects = allProjects.filter((project) => projectId === 'all' || project.id === projectId);
+  const mobileProject = projects.find((project) => project.id === preferredProject)?.id ?? projects[0]?.id;
   const mobileCount = runs.filter((run) => run.projectId === mobileProject).length;
   const islands = projects.flatMap((project) => {
     // Sorting by the stable instance keeps desks steady when a new report reorders the list.
@@ -97,14 +96,15 @@ export function AgentOffice({ runs, identityRuns, now, demo, projectId = 'all', 
       project, occupants: occupants.slice(index * 4, index * 4 + 4), index,
     }));
   });
+  if (!projects.length) return null;
   return <section className="office-panel" aria-label="Agent 办公室">
     <div className="office-heading">
       <div className="office-title"><h2>团队办公室</h2>{demo ? <span className="office-demo-label">演示</span> : null}</div>
       <span className="office-headcount"><UsersRound size={15} aria-hidden="true" /><span className="office-desktop-count">{runs.length} 位活跃</span><span className="office-mobile-count">{mobileCount} 位活跃</span></span>
     </div>
     {projectId === 'all' ? <nav className="office-project-tabs" aria-label="办公室项目视图">
-      {PROJECTS.map((project) => <button key={project.id} type="button" aria-label={`${project.name} 办公室`} title={project.name} aria-pressed={mobileProject === project.id} onClick={() => setMobileProject(project.id)}>
-        <span className="office-tab-mark" style={{ background: project.color }} aria-hidden="true" /><span>{project.name}</span>
+      {projects.map((project) => <button key={project.id} type="button" aria-label={`${project.name} 办公室`} title={project.name} aria-pressed={mobileProject === project.id} onClick={() => setPreferredProject(project.id)}>
+        <span className="office-tab-mark" style={{ background: project.color ?? 'var(--accent)' }} aria-hidden="true" /><span>{project.name}</span>
       </button>)}
     </nav> : null}
     <div className="office-floor">

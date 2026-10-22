@@ -9,6 +9,15 @@
 网页：https://xn--hyvt5k.club/AgentBoard/  
 仓库：https://github.com/MerelyFun/AgentBoard
 
+## 多项目与登录入口（2026-10-22）
+
+- 导航、项目卡片、办公室、名称搜索与详情统一从当前快照读取项目，支持 0/1/N 项；桌面卡片自动换行、侧栏项目可搜索滚动，手机项目选择和办公室页签支持更多项目。导入只显示所选报告中出现的项目，不补入三个固定项目。
+- 页头增加始终可见的“登录云端”按钮，未登录显示首屏引导，登录成功关闭表单；演示/本地模式登录后可直接“查看云端”，退出立即清除私有项目与执行。手机保留文字按钮。
+- `registered_projects` 迁移（20261022114603）已应用，agentboard-ingest ACTIVE v3；注册项目不再限三项，既有八份 writer 的角色/项目范围校验和保持一致。新项目仍需管理员登记及显式授权，接入示例见 `supabase/register-project.example.sql` 和 `docs/DEPLOYMENT.md`。未新增正式项目或改游戏 STATE。
+- TypeScript/Vitest 105 项、Deno 11 项与生产构建通过；隔离 PostgreSQL 验证三份迁移、动态 snapshot、授权、外键与 RLS。正式库事务注册第 4 项后回滚，项目数仍为 3；HTTP 未授权新项目 403、保留 ID 400。
+- Playwright / Chrome 验证真实访问码登录与退出，0/1/8 项模拟云端响应、8 份真实格式的本地文件导入、项目名搜索/详情、演示隔离，以及 1536/1150/1024/1023/768/393/320px。修复来源切换搜索框隐藏与超长 ID 标题溢出；167 字符项目名在 320/393/1024px 通过，无页面/控制台错误。证据位于本机任务目录的 `ui-qa-results.json`、`login-desktop.png`、`eight-projects-1536.png` 等，不入 Git。
+- 代码按 PR 检查 → main Pages 流程发布；发布结果以工作流与正式页面复测为准。
+
 ## 办公室 V2（2026-10-22）
 
 - 用户否定上一版后，使用已安装的 `game-art`、`create-game-assets`、`game-ui-ux`、`game-feel` 重新制定方向、生成整页概念和独立房间/共享桌/坐姿人物，再按真实数据组合。白色侧栏、暖白页面、青绿点缀；大任务牌移至原生详情和列表。

@@ -16,7 +16,7 @@
 
 静态包只有公开 URL/publishable key。未登录可打开外壳，不能读实际进度。随机访问码服务端只存 SHA-256；Edge 验证后用内部地址生成一次性 Auth 登录令牌并交换标准会话，不发送邮件。访问码不保存到浏览器。
 
-数据 SELECT 必须有 membership，普通 authenticated 身份不会自动获权。成员表仅本人可读，浏览器没有写入权限；服务 RPC 仅授权 service_role。八类 writer token 分角色、限三个项目，服务端不能信任本地 --role。private 表/函数不暴露，不用 public SECURITY DEFINER 绕过授权。
+数据 SELECT 必须有 membership，普通 authenticated 身份不会自动获权。成员表仅本人可读，浏览器没有写入权限；服务 RPC 仅授权 service_role。八类 writer token 分角色，各自限定显式授权的项目，服务端不能信任本地 --role。private 表/函数不暴露，不用 public SECURITY DEFINER 绕过授权。
 
 服务密钥来自 Edge runtime，不下载到本机或前端。`.local/`、访问码、运行数据不得进入 Git。CORS 限正式域名及本机端口，凭证鉴权仍是安全边界。
 
@@ -25,6 +25,8 @@
 云端、演示、本地导入分离；切换停止订阅。Realtime 去抖刷新，订阅成功后补查避免首次竞态；页面恢复焦点及可见时每 30 秒补查。断线保留上次成功数据并明确提示，注销立即清除私有数据。
 
 React + Vite + TypeScript。办公室由房间、共享桌、透明坐姿人物三份 WebP 组合；每四个真实 run 一桌，桌后/桌面/桌前分层，手机按项目查看。图像只承担场景，岗位/任务/阶段/状态由 HTML 和真实执行驱动。八岗位 role 在本地导入、云端 snapshot、身份图标及筛选间一致；不从旧摘要推断岗位。美术可提交，正式验收仍独占 verifier，领域平权不改变技术集成职责。
+
+项目导航、卡片、办公室、筛选和详情统一使用当前 snapshot.projects，支持空列表和任意数量项目；三个初始项目常量仅用于演示与本地导入名称回退。项目 ID 为 1–200 个 UTF-16 码元，禁止空白/控制字符与保留值 all。云端注册和每个 writer 的授权由管理员显式完成，新增项目不会自动扩大旧凭证范围。页头固定显示登录或账户按钮，未登录时展示登录引导，无需先切换数据来源。
 
 PR 只读检查，main 构建部署；部署 job 单独授予 pages/id-token 权限。helper 自动生成 `/AgentBoard/` 基址。仓库变量仅公开连接配置。账号已有自定义域名用于项目 Pages，强制 HTTPS。
 
