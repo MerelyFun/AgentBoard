@@ -109,14 +109,14 @@ export default function App() {
   return <div className="app-shell">
     <Sidebar projectId={projectId} onProject={setProjectId} onSettings={() => setSettings(true)} />
     <div className="workspace">
-      <header className="topbar"><div className="desktop-studio-title"><h1>{selectedProject?.name ?? '游戏工作室'}</h1><p>{selectedProject?.gameName ?? '每一次上报，都是团队的新进展。'}</p></div><div className="mobile-brand"><Brand /></div>
+      <header className="topbar"><div className="desktop-studio-title"><h1>{selectedProject?.name ?? '游戏工作室'}</h1><p>{selectedProject?.gameName ?? '团队的每一步，都在这里。'}</p></div><div className="mobile-brand"><Brand /></div>
         <div className="topbar-actions"><label className={`source-select source-${source} ${source === 'cloud' && cloud.phase === 'live' ? 'source-live' : ''}`}><span aria-hidden="true" className="source-dot" /><span className="sr-only">数据来源</span>
           <select aria-label="数据来源" value={source} onChange={(e) => changeSource(e.target.value as Source)}>
             {cloud.configured ? <option value="cloud">云端 · {cloudLabel}</option> : null}<option value="disconnected">离线查看</option><option value="demo">演示模式</option>{importedSnapshot ? <option value="imported">本地导入</option> : null}
           </select></label><button className="button settings-button" aria-label="连接设置" onClick={() => setSettings(true)}><Settings size={18} /><span>连接设置</span></button></div>
       </header>
       <main className="main-content">
-        <div className="page-heading"><div className="mobile-studio-title"><h1>{selectedProject ? selectedProject.name : '游戏工作室'}</h1><p>{selectedProject ? selectedProject.gameName : '每一次上报，都是团队的新进展。'}</p></div>
+        <div className="page-heading"><div className="mobile-studio-title"><h1>{selectedProject ? selectedProject.name : '游戏工作室'}</h1><p>{selectedProject ? selectedProject.gameName : '团队的每一步，都在这里。'}</p></div>
           <span className="source-note">{source === 'cloud' ? `${cloudLabel}${cloud.lastSyncedAt ? ` · 上次同步 ${formatAbsoluteTime(cloud.lastSyncedAt)}` : ''}` : source === 'demo' ? '以下均为演示数据' : source === 'imported' ? '本地导入 · 非实时同步' : '等待连接数据源'}</span>
         </div>
         {source === 'cloud' && cloud.phase !== 'live' ? <div className={`cloud-banner ${cloud.error ? 'cloud-warning' : ''}`} role="status"><span>{cloud.error || (cloud.phase === 'signed-out' ? '请先登录。项目上报仅向持有访问码的你开放。' : '正在连接云端，取得真实状态后自动更新。')}{cloud.snapshot && cloud.lastSyncedAt ? ` 上次同步：${formatAbsoluteTime(cloud.lastSyncedAt)}。` : ''}</span>{cloud.phase === 'signed-out' ? <button className="text-button" onClick={() => setSettings(true)}>登录查看</button> : cloud.phase !== 'connecting' ? <button className="text-button" onClick={() => void cloud.retry()}>立即重试</button> : null}</div> : null}

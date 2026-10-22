@@ -7,8 +7,12 @@ export function Dialog({ title, children, onClose, wide = false }: {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = ref.current;
+    const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     dialog?.showModal();
-    return () => { dialog?.close(); };
+    return () => {
+      dialog?.close();
+      if (trigger?.isConnected) trigger.focus({ preventScroll: true });
+    };
   }, []);
   return <dialog ref={ref} className={`dialog ${wide ? 'dialog-wide' : ''}`}
     aria-labelledby="dialog-heading" onCancel={onClose}

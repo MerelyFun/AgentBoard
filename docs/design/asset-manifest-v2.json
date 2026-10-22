@@ -1,0 +1,676 @@
+{
+  "schema_version": 1,
+  "art_direction_brief": "docs/design/art-direction-v2.md",
+  "asset_set": "agentboard-office-v2",
+  "status": "browser-integration-approved",
+  "reference": {
+    "filename": "exec-c0e61866-48dc-4dfc-816b-69f7c561967f.png",
+    "path": "docs/design/office-concept-v2.png",
+    "source_id": "exec-c0e61866-48dc-4dfc-816b-69f7c561967f.png",
+    "source_record_status": "recorded-in-office-prompts-and-task-generation-history",
+    "inspected_by_manifest_author": false,
+    "quality_approved": true,
+    "reviewed_by": [
+      "root",
+      "office_design_audit",
+      "eight_role_protocol"
+    ],
+    "approval_scope": "art direction and composed browser scene",
+    "prompt_record": "docs/design/office-prompts.md"
+  },
+  "runtime_contract": {
+    "renderer": "React + Vite + TypeScript; native HTML/CSS with raster illustration layers",
+    "desktop_scene_height_css_px": {
+      "min": 460,
+      "max": 520,
+      "scope": "default one-row scene target; extra desk rows grow naturally rather than clipping runs"
+    },
+    "project_islands": 3,
+    "mobile": "select a project and preserve readable desk/person scale instead of shrinking the entire three-island scene",
+    "people_binding": "one visible person per actual run in the effective filter; no invented people for empty data",
+    "persistent_scene_labels": [
+      "role",
+      "status capsule"
+    ],
+    "details_or_list_only": [
+      "task",
+      "milestone",
+      "step",
+      "summary",
+      "timestamps",
+      "evidence",
+      "instance and run identifiers"
+    ],
+    "layer_order_back_to_front": [
+      "room",
+      "rear seated people with chairs",
+      "shared desk with computers",
+      "front seated people with chairs",
+      "native labels and interaction controls"
+    ],
+    "collision_role": "none; hit targets and accessible controls are code-native",
+    "new_runtime_dependencies": [],
+    "compressed_bytes_total": 453464,
+    "decoded_rgba8_bytes_estimate_total": 18875672,
+    "budget_status": "453464-byte reusable asset set and browser integration reviewed; no new runtime dependencies",
+    "decoded_memory_estimate_method": "sum(width * height * 4) across the three runtime images; not measured browser allocation",
+    "project_islands_scope": "minimum one shared island per project; overflow repeats the same module with at most four runs per island",
+    "desktop_css_min_height_px": 460,
+    "large_desktop_css_min_height_px": 470,
+    "mobile_css_min_height_px": 370,
+    "mobile_breakpoint_max_css_px": 1023,
+    "island_max_width_css_px": 320,
+    "desktop_island_scene_aspect": "320/260",
+    "mobile_island_scene_aspect": "320/245",
+    "browser_memory_measurement": "not performed; decoded size remains an RGBA8 estimate",
+    "verification": {
+      "approved_at": "2026-10-22",
+      "reviewers": [
+        "root",
+        "office_design_audit",
+        "eight_role_protocol"
+      ],
+      "desktop_viewport_widths_css_px": [
+        1536,
+        1150,
+        1024
+      ],
+      "mobile_viewport_widths_css_px": [
+        1023,
+        768,
+        393,
+        320
+      ],
+      "horizontal_overflow_observed": false,
+      "explicit_demo_runs": 8,
+      "mobile_demo_project_counts": [
+        3,
+        4,
+        1
+      ],
+      "local_report_fixture_runs": 9,
+      "local_report_fixture_island_counts": [
+        4,
+        4,
+        1
+      ],
+      "dropped_fixture_runs": 0,
+      "tests_passed": 83,
+      "production_build_passed": true,
+      "evidence": [
+        "chat/artifacts/office-v2-final-scene.png",
+        "chat/artifacts/office-v2-final-mobile-four.png",
+        "chat/artifacts/office-v2-nine-mobile-refined.png",
+        "chat/artifacts/office-v2-qa-results.json",
+        "chat/artifacts/office-v2-verified-desktop.png",
+        "chat/artifacts/office-v2-verified-mobile.png"
+      ],
+      "reported_by": "root after browser inspection and independent visual review",
+      "scope": "asset composition, native scale, responsive scene, and run-preserving desk grouping",
+      "final_browser_regression": {
+        "reported_by": "root",
+        "checked_at": "2026-10-22",
+        "browser": "Chrome",
+        "dialog_enter_escape_restores_original_seat_focus": true,
+        "search_empty_state_verified": true,
+        "all_eight_roles_verified": true,
+        "mobile_project_counts": [
+          3,
+          4,
+          1
+        ],
+        "viewport_widths_css_px": [
+          1536,
+          1024,
+          768,
+          393,
+          320
+        ],
+        "page_errors": 0,
+        "console_errors": 0,
+        "tests_passed": 83,
+        "pages_base_build_passed": true,
+        "report": "chat/artifacts/office-v2-qa-results.json",
+        "scope": "browser office regression; not a game-engine, Douyin game-platform, or browser-memory measurement"
+      }
+    }
+  },
+  "assets": [
+    {
+      "id": "studio-room-v2",
+      "role": "empty warm-white isometric studio environment shared by all three project islands",
+      "path": "src/assets/studio-room-v2.webp",
+      "status": "browser-integration-approved",
+      "states": [
+        "empty-room"
+      ],
+      "technical": {
+        "dimensions": "1774x887",
+        "dimensions_status": "measured-from-runtime-WebP",
+        "native_display_size": "desktop floor min-height 460px (470px from 1600px viewport); mobile floor min-height 370px and 370px room overlay",
+        "alpha": false,
+        "anchor": "CSS background center center / cover; mobile overlay center top / auto 370px",
+        "frames": 1,
+        "filtering": "smooth",
+        "color_space": "sRGB",
+        "repeat": false,
+        "runtime_format": "WebP",
+        "compression_parameters": {
+          "tool": "Pillow",
+          "format": "WebP",
+          "quality": 88,
+          "method": 6,
+          "cropped": false,
+          "resized": false,
+          "provenance": "export parameters reported by generator; runtime dimensions independently measured"
+        },
+        "compressed_bytes": 165894,
+        "decoded_rgba8_bytes_estimate": 6294152,
+        "sha256": "906946f0632e785d7d7053773d8fffcc53e3da4c76de4e69973364d379fe81f6",
+        "collision_role": "none",
+        "mode": "RGB",
+        "alpha_range": null,
+        "decoded_memory_estimate_method": "width * height * 4; RGBA8 estimate, not measured browser allocation",
+        "anchor_system": "CSS placement; no imported image-pivot metadata required"
+      },
+      "visual_locks": [
+        "white sidebar and warm-white page direction",
+        "soft cartoon orthographic-isometric camera",
+        "muted light wood and teal accent family",
+        "soft upper-left light",
+        "open floor suitable for three shared desk islands",
+        "no people, chairs, desks, text, labels, or baked UI"
+      ],
+      "source": {
+        "kind": "generated",
+        "url_or_tool": "built-in ImageGen",
+        "creator": "root agent using built-in ImageGen",
+        "created_at": "2026-10-22",
+        "source_id": "exec-95ca61ae-be5c-4d71-913e-91066ef60f12.png",
+        "source_path": ".local/office-v2-source-art/exec-95ca61ae-be5c-4d71-913e-91066ef60f12.png",
+        "reference_file": "exec-c0e61866-48dc-4dfc-816b-69f7c561967f.png",
+        "license": "Generated output governed by OpenAI Terms of Use; not a third-party open-source license",
+        "terms_url_or_record": "https://openai.com/policies/terms-of-use/",
+        "rights_status": "recorded-built-in-ImageGen-output-no-third-party-input-assets-or-brands",
+        "attribution": "Generated with built-in ImageGen; no third-party input assets or brands used.",
+        "restrictions": "Subject to applicable law and OpenAI Terms of Use; output is not necessarily exclusive.",
+        "prompt_or_source_record": "docs/design/office-prompts.md; exact generation calls and source IDs retained in this task history",
+        "edit_history": [
+          {
+            "date": "2026-10-22",
+            "tool": "Pillow",
+            "operation": "PNG to WebP encoding only",
+            "quality": 88,
+            "method": 6,
+            "cropped": false,
+            "resized": false,
+            "output": "src/assets/studio-room-v2.webp",
+            "reported_by": "root"
+          }
+        ],
+        "source_directory": ".local/office-v2-source-art/",
+        "source_directory_status": "source filenames confirmed; directory is git-ignored; root checked source PNG alpha",
+        "terms_checked_at": "2026-10-22",
+        "terms_checked_by": "root",
+        "rights_summary": "As between the user and OpenAI, the user owns Output subject to applicable law and the linked terms; Output may not be unique."
+      },
+      "verification": {
+        "native_scale_reviewed": true,
+        "in_engine_reviewed": false,
+        "runtime_context": "browser page, not a game engine",
+        "technical_checks_passed": true,
+        "source_record_complete": true,
+        "approved_by": "root; office_design_audit; eight_role_protocol",
+        "approved_at": "2026-10-22",
+        "review_status": "browser-integration-approved",
+        "evidence": [
+          ".local/office-v2-qa/studio-room-v2-asset-report.json",
+          "chat/artifacts/office-v2-final-scene.png",
+          "chat/artifacts/office-v2-final-mobile-four.png",
+          "chat/artifacts/office-v2-nine-mobile-refined.png"
+        ],
+        "raster_size_check_passed": true,
+        "technical_check_scope": "Runtime size, SHA-256 and required alpha verified; root and independent reviewers checked native-scale composition, frame order, seating, occlusion, transparent edges, clipping, and responsive browser integration. No game-engine acceptance or browser-memory measurement claimed.",
+        "raster_qa_report": ".local/office-v2-qa/studio-room-v2-asset-report.json",
+        "raster_checked_at": "2026-10-22",
+        "in_engine_review_status": "not-applicable-browser-product",
+        "browser_integration_reviewed": true,
+        "reviewers": [
+          "root",
+          "office_design_audit",
+          "eight_role_protocol"
+        ],
+        "visual_review_evidence_source": "root, office_design_audit, and eight_role_protocol inspected actual browser screenshots"
+      }
+    },
+    {
+      "id": "studio-desk-v2",
+      "role": "reusable shared desk island with four computers, duplicated for three projects",
+      "path": "src/assets/studio-desk-v2.webp",
+      "status": "browser-integration-approved",
+      "states": [
+        "empty-shared-desk"
+      ],
+      "technical": {
+        "dimensions": "1536x1024",
+        "dimensions_status": "measured-from-runtime-WebP",
+        "native_display_size": "100% of island width, capped at 320 CSS px; at cap the desk box is 320 x 213.333 CSS px",
+        "alpha": true,
+        "anchor": "island-scene left 0%, top 10%, width 100%, aspect 3/2, z-index 3",
+        "frames": 1,
+        "seat_slots": 4,
+        "seat_coordinates": {
+          "units": "left/top percentages of island-scene box; these are CSS seat-box origins, not source-image pivots",
+          "desktop": [
+            {
+              "seat": 0,
+              "left": 39.5,
+              "top": 7.3
+            },
+            {
+              "seat": 1,
+              "left": 64.5,
+              "top": 22.3
+            },
+            {
+              "seat": 2,
+              "left": 5.7,
+              "top": 24.2
+            },
+            {
+              "seat": 3,
+              "left": 30.6,
+              "top": 37.7
+            }
+          ],
+          "mobile_max_1023px": [
+            {
+              "seat": 0,
+              "left": 39.5,
+              "top": 7.75
+            },
+            {
+              "seat": 1,
+              "left": 64.5,
+              "top": 23.7
+            },
+            {
+              "seat": 2,
+              "left": 5.7,
+              "top": 25.7
+            },
+            {
+              "seat": 3,
+              "left": 30.6,
+              "top": 40.0
+            }
+          ],
+          "source": "src/components/agent-office.css"
+        },
+        "occlusion_mask_or_slices": "No additional image slices or masks: far-seat sprites z-index 2, shared desk 3, near-seat sprites 4.",
+        "filtering": "smooth",
+        "color_space": "sRGB",
+        "repeat": false,
+        "runtime_format": "WebP with alpha",
+        "compression_parameters": {
+          "tool": "Pillow",
+          "format": "WebP",
+          "quality": 88,
+          "method": 6,
+          "cropped": false,
+          "resized": false,
+          "provenance": "export parameters reported by generator; runtime dimensions independently measured"
+        },
+        "compressed_bytes": 88558,
+        "decoded_rgba8_bytes_estimate": 6291456,
+        "sha256": "23986f4a8dd81eb53c49038188494127f41217bcfe44617c5e86042864b8fdec",
+        "collision_role": "none",
+        "mode": "RGBA",
+        "alpha_range": [
+          0,
+          254
+        ],
+        "decoded_memory_estimate_method": "width * height * 4; RGBA8 estimate, not measured browser allocation",
+        "anchor_system": "CSS placement; no imported image-pivot metadata required"
+      },
+      "visual_locks": [
+        "one shared desk with four computers",
+        "camera and floor axes match the reference room",
+        "light wood and restrained teal accents",
+        "soft upper-left light and consistent contact shading",
+        "chairs belong only to the people layer",
+        "no people, chairs, floor, walls, project labels, or status text"
+      ],
+      "source": {
+        "kind": "generated",
+        "url_or_tool": "built-in ImageGen",
+        "creator": "root agent using built-in ImageGen",
+        "created_at": "2026-10-22",
+        "source_id": "exec-011c447c-c307-4bef-a7c2-58af6320c275.png",
+        "source_path": ".local/office-v2-source-art/exec-011c447c-c307-4bef-a7c2-58af6320c275.png",
+        "reference_file": "exec-c0e61866-48dc-4dfc-816b-69f7c561967f.png",
+        "license": "Generated output governed by OpenAI Terms of Use; not a third-party open-source license",
+        "terms_url_or_record": "https://openai.com/policies/terms-of-use/",
+        "rights_status": "recorded-built-in-ImageGen-output-no-third-party-input-assets-or-brands",
+        "attribution": "Generated with built-in ImageGen; no third-party input assets or brands used.",
+        "restrictions": "Subject to applicable law and OpenAI Terms of Use; output is not necessarily exclusive.",
+        "prompt_or_source_record": "docs/design/office-prompts.md; exact generation calls and source IDs retained in this task history",
+        "edit_history": [
+          {
+            "date": "2026-10-22",
+            "tool": "built-in ImageGen",
+            "input_source_id": "exec-466a8644-6457-478f-8564-338a126b9847.png",
+            "output_source_id": "exec-011c447c-c307-4bef-a7c2-58af6320c275.png",
+            "change": "Precisely edit the two rear-row computers to show their backs; retain the rest of the shared desk.",
+            "reported_by": "root"
+          },
+          {
+            "date": "2026-10-22",
+            "tool": "Pillow",
+            "operation": "PNG to WebP encoding only",
+            "quality": 88,
+            "method": 6,
+            "cropped": false,
+            "resized": false,
+            "output": "src/assets/studio-desk-v2.webp",
+            "reported_by": "root"
+          }
+        ],
+        "source_directory": ".local/office-v2-source-art/",
+        "source_directory_status": "source filenames confirmed; directory is git-ignored; root checked source PNG alpha",
+        "original_source_id": "exec-466a8644-6457-478f-8564-338a126b9847.png",
+        "terms_checked_at": "2026-10-22",
+        "terms_checked_by": "root",
+        "rights_summary": "As between the user and OpenAI, the user owns Output subject to applicable law and the linked terms; Output may not be unique."
+      },
+      "verification": {
+        "native_scale_reviewed": true,
+        "in_engine_reviewed": false,
+        "runtime_context": "browser page, not a game engine",
+        "technical_checks_passed": true,
+        "source_record_complete": true,
+        "alpha_verified": true,
+        "four_seat_alignment_verified": true,
+        "rear_front_occlusion_verified": true,
+        "approved_by": "root; office_design_audit; eight_role_protocol",
+        "approved_at": "2026-10-22",
+        "review_status": "browser-integration-approved",
+        "evidence": [
+          ".local/office-v2-qa/studio-desk-v2-asset-report.json",
+          "chat/artifacts/office-v2-final-scene.png",
+          "chat/artifacts/office-v2-final-mobile-four.png",
+          "chat/artifacts/office-v2-nine-mobile-refined.png"
+        ],
+        "raster_size_check_passed": true,
+        "technical_check_scope": "Runtime size, SHA-256 and required alpha verified; root and independent reviewers checked native-scale composition, frame order, seating, occlusion, transparent edges, clipping, and responsive browser integration. No game-engine acceptance or browser-memory measurement claimed.",
+        "raster_qa_report": ".local/office-v2-qa/studio-desk-v2-asset-report.json",
+        "raster_checked_at": "2026-10-22",
+        "alpha_verification_scope": "Recorded alpha extrema and runtime transparent edges verified; root independently confirmed source PNG and WebP alpha are pixel-identical.",
+        "source_alpha_preservation": {
+          "method": "Pillow ImageChops.difference(source PNG alpha, runtime WebP alpha).getbbox()",
+          "difference_bbox": null,
+          "result": "identical alpha",
+          "reported_by": "root",
+          "independently_repeated_by_manifest_author": false
+        },
+        "in_engine_review_status": "not-applicable-browser-product",
+        "browser_integration_reviewed": true,
+        "reviewers": [
+          "root",
+          "office_design_audit",
+          "eight_role_protocol"
+        ],
+        "visual_review_evidence_source": "root, office_design_audit, and eight_role_protocol inspected actual browser screenshots"
+      }
+    },
+    {
+      "id": "studio-people-v2",
+      "role": "transparent seated people with chairs; two facings with two appearances each; each runtime person binds to a real run",
+      "path": "src/assets/studio-people-v2.webp",
+      "status": "browser-integration-approved",
+      "states": [
+        "seated-neutral"
+      ],
+      "variants": [
+        "ne-male-blue",
+        "ne-female-coral",
+        "sw-female-mint",
+        "sw-male-mustard"
+      ],
+      "technical": {
+        "dimensions": "1254x1254",
+        "dimensions_status": "measured-from-runtime-WebP",
+        "native_display_size": "square sprite box 35% of island width, up to 112 x 112 CSS px at the 320px island cap; visible silhouette occupies part of that box",
+        "alpha": true,
+        "anchor": "CSS square seat box width 35% of island; sprite transform-origin 50% 75%; per-seat placement recorded on desk asset",
+        "frames": 4,
+        "frame_semantics": "two facings x two appearances; four cells, not four facings or an animation sequence",
+        "atlas": {
+          "requested_layout": "2x2 equal cells with padding",
+          "measured_layout": "2x2",
+          "cell_dimensions": "627x627",
+          "padding_pixels": null,
+          "frame_order": [
+            {
+              "index": 0,
+              "row": 0,
+              "column": 0,
+              "appearance": "male, blue clothing",
+              "facing": "NE",
+              "view": "back"
+            },
+            {
+              "index": 1,
+              "row": 0,
+              "column": 1,
+              "appearance": "female, coral clothing",
+              "facing": "NE",
+              "view": "back"
+            },
+            {
+              "index": 2,
+              "row": 1,
+              "column": 0,
+              "appearance": "female, mint clothing",
+              "facing": "SW",
+              "view": "front"
+            },
+            {
+              "index": 3,
+              "row": 1,
+              "column": 1,
+              "appearance": "male, mustard clothing",
+              "facing": "SW",
+              "view": "front"
+            }
+          ],
+          "facing_definition": "screen-space direction of the seated person toward the table center",
+          "frame_rectangles": [
+            {
+              "index": 0,
+              "x": 0,
+              "y": 0,
+              "width": 627,
+              "height": 627
+            },
+            {
+              "index": 1,
+              "x": 627,
+              "y": 0,
+              "width": 627,
+              "height": 627
+            },
+            {
+              "index": 2,
+              "x": 0,
+              "y": 627,
+              "width": 627,
+              "height": 627
+            },
+            {
+              "index": 3,
+              "x": 627,
+              "y": 627,
+              "width": 627,
+              "height": 627
+            }
+          ],
+          "frame_anchors": {
+            "coordinate_system": "CSS sprite transform-origin percentages",
+            "all_frames": {
+              "x_percent": 50,
+              "y_percent": 75
+            },
+            "source_image_pivot_metadata": "not used",
+            "source": "src/components/agent-office.css"
+          },
+          "verified": true,
+          "frame_order_source": "root and independent native-scale browser screenshot review; CSS data-variant positions match the recorded grid",
+          "grid_dimensions_checked": true,
+          "padding_status": "native-scale transparent edges, cell separation, and full silhouettes visually reviewed; no image crop or added inset required",
+          "padding_measurement": "not a fixed-inset sprite; full 627px cells are used and visual edge clearance is approved",
+          "runtime_seat_frame_selection": {
+            "far_seats_0_1": {
+              "facing": "SW",
+              "frame_pool": [
+                2,
+                3
+              ],
+              "sprite_z_index": 2
+            },
+            "near_seats_2_3": {
+              "facing": "NE",
+              "frame_pool": [
+                0,
+                1
+              ],
+              "sprite_z_index": 4
+            },
+            "appearance_selection": "stable hash of instanceId or run id, modulo two",
+            "source": "src/components/AgentOffice.tsx workerVariant and src/components/agent-office.css"
+          }
+        },
+        "filtering": "smooth",
+        "color_space": "sRGB",
+        "repeat": false,
+        "runtime_format": "WebP with alpha",
+        "compression_parameters": {
+          "tool": "Pillow",
+          "format": "WebP",
+          "quality": 88,
+          "method": 6,
+          "cropped": false,
+          "resized": false,
+          "provenance": "export parameters reported by generator; runtime dimensions independently measured"
+        },
+        "compressed_bytes": 199012,
+        "decoded_rgba8_bytes_estimate": 6290064,
+        "sha256": "ac30a62b6763bae44361d05ba97ca4e2fd8e8b48f6d3c51905590610230705e8",
+        "collision_role": "none; native hit targets bind to the corresponding run",
+        "mode": "RGBA",
+        "alpha_range": [
+          0,
+          255
+        ],
+        "decoded_memory_estimate_method": "width * height * 4; RGBA8 estimate, not measured browser allocation",
+        "anchor_system": "CSS placement; no imported image-pivot metadata required"
+      },
+      "visual_locks": [
+        "person plus chair only",
+        "two facings and two appearances per facing share proportions, chair scale, and sitting baseline",
+        "camera, floor axes, palette, and light match room and shared desk",
+        "complete heads, hands, legs, and chairs within each measured cell",
+        "genuine transparent background and padding",
+        "no desks, monitors, floor, walls, text, role labels, or baked state badges"
+      ],
+      "source": {
+        "kind": "generated",
+        "url_or_tool": "built-in ImageGen",
+        "creator": "root agent using built-in ImageGen",
+        "created_at": "2026-10-22",
+        "source_id": "exec-06a7f33e-a27a-455d-bd06-3a4a116781ed.png",
+        "source_path": ".local/office-v2-source-art/exec-06a7f33e-a27a-455d-bd06-3a4a116781ed.png",
+        "reference_file": "exec-c0e61866-48dc-4dfc-816b-69f7c561967f.png",
+        "license": "Generated output governed by OpenAI Terms of Use; not a third-party open-source license",
+        "terms_url_or_record": "https://openai.com/policies/terms-of-use/",
+        "rights_status": "recorded-built-in-ImageGen-output-no-third-party-input-assets-or-brands",
+        "attribution": "Generated with built-in ImageGen; no third-party input assets or brands used.",
+        "restrictions": "Subject to applicable law and OpenAI Terms of Use; output is not necessarily exclusive.",
+        "prompt_or_source_record": "docs/design/office-prompts.md; exact generation calls and source IDs retained in this task history",
+        "edit_history": [
+          {
+            "date": "2026-10-22",
+            "tool": "Pillow",
+            "operation": "PNG to WebP encoding only",
+            "quality": 88,
+            "method": 6,
+            "cropped": false,
+            "resized": false,
+            "output": "src/assets/studio-people-v2.webp",
+            "reported_by": "root"
+          }
+        ],
+        "source_directory": ".local/office-v2-source-art/",
+        "source_directory_status": "source filenames confirmed; directory is git-ignored; root checked source PNG alpha",
+        "terms_checked_at": "2026-10-22",
+        "terms_checked_by": "root",
+        "rights_summary": "As between the user and OpenAI, the user owns Output subject to applicable law and the linked terms; Output may not be unique."
+      },
+      "verification": {
+        "native_scale_reviewed": true,
+        "in_engine_reviewed": false,
+        "runtime_context": "browser page, not a game engine",
+        "technical_checks_passed": true,
+        "source_record_complete": true,
+        "alpha_verified": true,
+        "seat_scale_and_occlusion_verified": true,
+        "real_run_count_and_detail_binding_verified": true,
+        "mobile_scale_verified": true,
+        "approved_by": "root; office_design_audit; eight_role_protocol",
+        "approved_at": "2026-10-22",
+        "review_status": "browser-integration-approved",
+        "evidence": [
+          ".local/office-v2-qa/studio-people-v2-asset-report.json",
+          "chat/artifacts/office-v2-final-scene.png",
+          "chat/artifacts/office-v2-final-mobile-four.png",
+          "chat/artifacts/office-v2-nine-mobile-refined.png"
+        ],
+        "raster_size_check_passed": true,
+        "technical_check_scope": "Runtime size, SHA-256 and required alpha verified; root and independent reviewers checked native-scale composition, frame order, seating, occlusion, transparent edges, clipping, and responsive browser integration. No game-engine acceptance or browser-memory measurement claimed.",
+        "raster_qa_report": ".local/office-v2-qa/studio-people-v2-asset-report.json",
+        "raster_checked_at": "2026-10-22",
+        "alpha_verification_scope": "Recorded alpha extrema and runtime transparent edges verified; root independently confirmed source PNG and WebP alpha are pixel-identical.",
+        "source_alpha_preservation": {
+          "method": "Pillow ImageChops.difference(source PNG alpha, runtime WebP alpha).getbbox()",
+          "difference_bbox": null,
+          "result": "identical alpha",
+          "reported_by": "root",
+          "independently_repeated_by_manifest_author": false
+        },
+        "two_facings_and_frame_order_reviewed": true,
+        "frame_order_reported_by_generator": true,
+        "padding_and_clipping_reviewed": true,
+        "padding_measurement_note": "Native-scale visual inspection passed; low-alpha edge noise is not interpreted as a clipped silhouette from alpha > 0 bounds alone.",
+        "in_engine_review_status": "not-applicable-browser-product",
+        "browser_integration_reviewed": true,
+        "reviewers": [
+          "root",
+          "office_design_audit",
+          "eight_role_protocol"
+        ],
+        "visual_review_evidence_source": "root, office_design_audit, and eight_role_protocol inspected actual browser screenshots"
+      },
+      "facings": [
+        "NE",
+        "SW"
+      ]
+    }
+  ],
+  "approved_at": "2026-10-22",
+  "approved_by": [
+    "root",
+    "office_design_audit",
+    "eight_role_protocol"
+  ],
+  "approval_scope": "V2 raster assets and native-scale browser-office integration; not a game-engine or game-platform acceptance"
+}
