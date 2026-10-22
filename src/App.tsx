@@ -62,6 +62,7 @@ export default function App() {
   const scopedTotal = filterRunsByActivity(filterBoardRuns(snapshot.runs, { projectId: selectedProjectId }, now, projects), activityScope, now).length;
   const scopeCounts = countRunActivity(filterBoardRuns(snapshot.runs, { projectId: selectedProjectId, role, query }, now, projects), now);
   const selectedProject = projects.find((p) => p.id === selectedProjectId);
+  const viewKey = JSON.stringify([source, selectedProjectId, role, status, query, activityScope]);
   function resetFilters() { setProjectId('all'); setRole('all'); setStatus('all'); setQuery(''); }
   function changeSource(next: Source) { setSource(next); setActivityScope('active'); setRun(null); setEvent(null); setAuthError(''); resetFilters(); }
   function changeScope(next: ActivityScope) { setActivityScope(next); setStatus('all'); setRun(null); setEvent(null); }
@@ -132,13 +133,13 @@ export default function App() {
           <ActivitySwitcher scope={activityScope} counts={scopeCounts} onScope={changeScope} />
           <BoardFilters role={role} status={status} query={query} onRole={setRole} onStatus={changeStatus} onQuery={setQuery} onClear={() => { setRole('all'); setStatus('all'); setQuery(''); }} />
         </div>
-        {activityScope === 'active' ? <AgentOffice projects={projects} runs={runs} identityRuns={snapshot.runs} projectId={selectedProjectId} now={now} demo={source === 'demo'} onRun={setRun} /> : null}
+        {activityScope === 'active' ? <AgentOffice viewKey={viewKey} projects={projects} runs={runs} identityRuns={snapshot.runs} projectId={selectedProjectId} now={now} demo={source === 'demo'} onRun={setRun} /> : null}
         <div className="activity-layout">
-          <AgentList projects={projects} runs={runs} identityRuns={snapshot.runs} total={scopedTotal} now={now} demo={source === 'demo'} hasReports={snapshot.runs.length > 0} scope={activityScope} onShowAll={() => changeScope('all')}
+          <AgentList viewKey={viewKey} projects={projects} runs={runs} identityRuns={snapshot.runs} total={scopedTotal} now={now} demo={source === 'demo'} hasReports={snapshot.runs.length > 0} scope={activityScope} onShowAll={() => changeScope('all')}
             emptyTitle={source === 'cloud' ? cloudEmptyTitle : undefined} emptyDescription={source === 'cloud' ? cloudEmptyDescription : undefined}
             onConnect={source === 'cloud' ? () => setSettings(true) : undefined} connectLabel={cloud.phase === 'signed-out' ? '登录查看' : '连接设置'}
             onClear={resetFilters} onRun={setRun} onDemo={() => changeSource('demo')} onImport={() => fileInput.current?.click()} />
-          <EventTimeline projects={projects} events={events} runs={snapshot.runs} hasEvents={snapshot.events.length > 0} now={now} demo={source === 'demo'} onEvent={viewEvent} />
+          <EventTimeline viewKey={viewKey} projects={projects} events={events} runs={snapshot.runs} hasEvents={snapshot.events.length > 0} now={now} demo={source === 'demo'} onEvent={viewEvent} />
         </div>
       </main>
     </div>
