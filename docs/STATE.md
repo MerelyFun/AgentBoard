@@ -4,12 +4,22 @@
 
 当前阶段：GitHub Pages 已发布，主动上报到正式网页的实时链路已验收。用户已授权 MerelyFun 账号发布。
 
-2026-10-22 当前更新：八岗位真实 role 已贯通 reporter、Edge、数据库与网页；美术统筹、原画/资产、UI设计、动效/特效可独立上报与提交。制作人与美术领域平权，技术负责人负责集成，verifier 独立验收。六个 GitHub skills 与制作规范已落实，后续提示词见 `agents/START_ART.md`。网页改为森林绿游戏工作室、共享木地板与真实人物工位；当前发布验证见下节。未启动三个游戏的美术生产、未改游戏 STATE。
+2026-10-22 当前更新：八岗位真实 role 已贯通 reporter、Edge、数据库与网页；美术统筹、原画/资产、UI设计、动效/特效可独立上报与提交。制作人与美术领域平权，技术负责人负责集成，verifier 独立验收。六个 GitHub skills 与制作规范已落实，后续提示词见 `agents/START_ART.md`。办公室按用户反馈重做为白色界面、暖色共享房间与三座共享桌岛；当前视觉验证见下节。未启动三个游戏的美术生产、未改游戏 STATE。
 
 网页：https://xn--hyvt5k.club/AgentBoard/  
 仓库：https://github.com/MerelyFun/AgentBoard
 
-## 八岗位与工作室更新（2026-10-22）
+## 办公室 V2（2026-10-22）
+
+- 用户否定上一版后，使用已安装的 `game-art`、`create-game-assets`、`game-ui-ux`、`game-feel` 重新制定方向、生成整页概念和独立房间/共享桌/坐姿人物，再按真实数据组合。白色侧栏、暖白页面、青绿点缀；大任务牌移至原生详情和列表。
+- 每项目共享四人桌，run 超过四条自动分桌；桌后人物、桌面、桌前人物分层。人物仍逐一对应当前有效筛选中的真实 run；匿名与空态不填员工，演示模式明确标记。
+- 桌面场景约 476 CSS px 高；手机按项目切换且人数同步，保持桌与人物尺度，多桌纵排时背景不拉伸。全局项目/岗位/状态/搜索筛选与原详情保持联动。
+- 三份运行 WebP 合计 **453,464 字节**，没有新增依赖、游戏引擎、视频或远程字体。透明通道与生成源图逐像素相同；来源、尺寸、图集顺序和视觉检查见 `design/asset-manifest-v2.json`。
+- TypeScript/Vitest **83 项**与生产构建通过。浏览器验证 1536/1150/1024/1023/768/393/320px 无横向溢出；手机三项目人数 3/4/1，9 条本地演示报告分 4+4+1 不丢实例；岗位筛选、搜索空态、详情、Enter/Escape、关闭后焦点恢复与减少动态通过，浏览器无错误。
+- root 与独立视觉评审实际对照概念及桌面/手机截图，确认围坐、前后遮挡、标签与画面尺度，无阻断。证据保存在本机任务目录 `artifacts/office-v2-final-scene.png`、`office-v2-final-mobile-four.png`、`office-v2-nine-mobile-refined.png`、`office-v2-qa-results.json`。本轮只改前端与设计记录；云端数据与权限未改。
+- 用户已授权直接发布；沿用 PR 检查与 main 的 Pages 工作流，部署完成后在正式页只读复测登录、Realtime、角色、注销和手机场景。
+
+## 八岗位与第一版工作室更新（2026-10-22，视觉已由 V2 替代）
 
 - 数据库迁移 `20261022045506_art_roles.sql` 已应用；agentboard-ingest ACTIVE v2，agentboard-access 保持 v2。旧任务/事件不重写，旧 developer lead 兼容；父子关系在先到父/后到父两种顺序校验。
 - 本机 `.local/transport.json` 已增四份独立美术 token，服务器仅存哈希，旧 token/访问码保持有效；私表、service-only RPC 与成员 RLS 边界不变。
