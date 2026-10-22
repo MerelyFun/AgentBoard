@@ -4,12 +4,15 @@ import { Sidebar, Brand } from './components/Sidebar';
 import { ProjectStrip } from './components/ProjectStrip';
 import { AgentList } from './components/AgentList';
 import { BoardFilters } from './components/BoardFilters';
+import { ActivitySwitcher } from './components/ActivitySwitcher';
+import { AgentOffice } from './components/AgentOffice';
 import { EventTimeline } from './components/EventTimeline';
 import { RunDetails, EventDetails } from './components/Details';
 import { Dialog } from './components/Dialog';
 import { PROJECTS, sortEvents, formatAbsoluteTime, type AgentRole, type AgentRun, type BoardEvent, type BoardSnapshot, type DisplayStatus, type ProjectId } from './domain/board';
 import { CLOUD_CONFIG } from './data/cloud-config';
 import { filterBoardEvents, filterBoardRuns, resolveEventRun } from './domain/presentation';
+import { countRunActivity, filterEventsByActivity, filterRunsByActivity, type ActivityScope } from './domain/activity';
 import { useCloudBoard } from './data/use-cloud-board';
 
 type Source = 'cloud' | 'disconnected' | 'demo' | 'imported';
@@ -23,6 +26,7 @@ export default function App() {
   const [role, setRole] = useState<AgentRole | 'all'>('all');
   const [status, setStatus] = useState<DisplayStatus | 'all'>('all');
   const [query, setQuery] = useState('');
+  const [activityScope, setActivityScope] = useState<ActivityScope>('active');
   const [now, setNow] = useState(Date.now);
   const [settings, setSettings] = useState(false);
   const [run, setRun] = useState<AgentRun | null>(null);
@@ -49,11 +53,21 @@ export default function App() {
   }, [source, demoSnapshot]);
 
   const snapshot = source === 'cloud' ? cloud.snapshot ?? emptySnapshot : source === 'demo' ? demoSnapshot ?? emptySnapshot : source === 'imported' ? importedSnapshot ?? emptySnapshot : emptySnapshot;
-  const runs = filterBoardRuns(snapshot.runs, { projectId, role, status, query }, now);
-  const events = filterBoardEvents(snapshot.events, snapshot.runs, { projectId, role, status, query }, now);
+  const matchingRuns = filterBoardRuns(snapshot.runs, { projectId, role, status, query }, now);
+  const runs = filterRunsByActivity(matchingRuns, activityScope, now);
+  const events = filterEventsByActivity(filterBoardEvents(snapshot.events, snapshot.runs, { projectId, role, status, query }, now), snapshot.runs, activityScope, now);
+  const scopedTotal = filterRunsByActivity(filterBoardRuns(snapshot.runs, { projectId }, now), activityScope, now).length;
+  const scopeCounts = countRunActivity(filterBoardRuns(snapshot.runs, { projectId, role, query }, now), now);
   const selectedProject = PROJECTS.find((p) => p.id === projectId);
   function resetFilters() { setProjectId('all'); setRole('all'); setStatus('all'); setQuery(''); }
-  function changeSource(next: Source) { setSource(next); setRun(null); setEvent(null); setAuthError(''); resetFilters(); }
+  function changeSource(next: Source) { setSource(next); setActivityScope('active'); setRun(null); setEvent(null); setAuthError(''); resetFilters(); }
+  function changeScope(next: ActivityScope) { setActivityScope(next); setStatus('all'); setRun(null); setEvent(null); }
+  function changeStatus(next: DisplayStatus | 'all') {
+    setStatus(next);
+    if (next === 'running' || next === 'blocked') setActivityScope('active');
+    else if (next === 'unknown') setActivityScope('unconfirmed');
+    else if (next !== 'all') setActivityScope('history');
+  }
   async function login(e: FormEvent) {
     e.preventDefault();
     const code = accessCode;
@@ -109,9 +123,11 @@ export default function App() {
         {error ? <div className="error-banner" role="alert"><span>{error}</span><button className="icon-button" aria-label="关闭错误提示" onClick={() => setError('')}><X size={17} /></button></div> : null}
         <div className="mobile-project-filter"><label className="sr-only" htmlFor="mobile-project">选择项目</label><select id="mobile-project" value={projectId} onChange={(e) => setProjectId(e.target.value as ProjectId | 'all')}><option value="all">全部项目</option>{PROJECTS.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
         <ProjectStrip projects={snapshot.projects.filter((p) => projectId === 'all' || p.id === projectId)} runs={snapshot.runs} selected={projectId} now={now} onSelect={setProjectId} />
-        <BoardFilters role={role} status={status} query={query} onRole={setRole} onStatus={setStatus} onQuery={setQuery} onClear={() => { setRole('all'); setStatus('all'); setQuery(''); }} />
+        <ActivitySwitcher scope={activityScope} counts={scopeCounts} onScope={changeScope} />
+        <BoardFilters role={role} status={status} query={query} onRole={setRole} onStatus={changeStatus} onQuery={setQuery} onClear={() => { setRole('all'); setStatus('all'); setQuery(''); }} />
+        {activityScope === 'active' ? <AgentOffice runs={runs} identityRuns={snapshot.runs} projectId={projectId} now={now} demo={source === 'demo'} onRun={setRun} /> : null}
         <div className="activity-layout">
-          <AgentList runs={runs} identityRuns={snapshot.runs} total={snapshot.runs.length} now={now} demo={source === 'demo'} hasReports={snapshot.runs.length > 0}
+          <AgentList runs={runs} identityRuns={snapshot.runs} total={scopedTotal} now={now} demo={source === 'demo'} hasReports={snapshot.runs.length > 0} scope={activityScope} onShowAll={() => changeScope('all')}
             emptyTitle={source === 'cloud' ? cloudEmptyTitle : undefined} emptyDescription={source === 'cloud' ? cloudEmptyDescription : undefined}
             onConnect={source === 'cloud' ? () => setSettings(true) : undefined} connectLabel={cloud.phase === 'signed-out' ? '登录查看' : '连接设置'}
             onClear={resetFilters} onRun={setRun} onDemo={() => changeSource('demo')} onImport={() => fileInput.current?.click()} />

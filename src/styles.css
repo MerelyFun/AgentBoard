@@ -302,6 +302,14 @@ input::placeholder { color: #8b94a1; }
 .technical-details dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
 
 /* Narrow desktops and tablets */
+.activity-switcher { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.activity-scopes { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; background: #e9edf0; border-radius: 8px; }
+.activity-scope { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 14px; border-radius: 6px; color: #66717d; font-size: 12px; }
+.activity-scope > span { font-variant-numeric: tabular-nums; font-size: 11px; }
+.activity-scope.selected { background: #fff; color: var(--accent); font-weight: 600; box-shadow: 0 1px 4px #182c1910; }
+.activity-scope:hover { color: var(--accent); }
+.activity-switcher > p { font-size: 11px; color: var(--muted); }
+
 @media (max-width: 1279px) {
   .activity-layout { grid-template-columns: minmax(0, 1fr); }
   .table-heading, .agent-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 122px; column-gap: 20px; }
@@ -335,6 +343,10 @@ input::placeholder { color: #8b94a1; }
 
 /* Mobile: timeline first, then execution cards */
 @media (max-width: 767px) {
+  .activity-switcher { gap: 8px; margin-bottom: 13px; }
+  .activity-scopes { width: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; padding: 3px; }
+  .activity-scope { justify-content: center; gap: 4px; padding: 8px 4px; font-size: 12px; }
+  .activity-switcher > p { font-size: 11px; line-height: 1.7; }
   .sidebar, .desktop-page-name { display: none; }
   .workspace { margin-left: 0; }
   .topbar { height: 64px; padding: 0 16px; gap: 10px; }

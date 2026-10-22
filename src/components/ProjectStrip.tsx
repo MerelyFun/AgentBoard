@@ -1,4 +1,5 @@
 import { Clock3, TriangleAlert } from 'lucide-react';
+import { countRunActivity } from '../domain/activity';
 import { formatRelativeTime, statusForRun, type AgentRun, type Project, type ProjectId } from '../domain/board';
 
 export function ProjectStrip({ projects, runs, selected, now, onSelect }: {
@@ -6,8 +7,9 @@ export function ProjectStrip({ projects, runs, selected, now, onSelect }: {
 }) {
   return <section className="project-strip" aria-label="项目阶段">
     {projects.map((project) => {
-      const blocked = runs.find((run) => run.projectId === project.id && statusForRun(run, now) === 'blocked');
-      const stale = runs.some((run) => run.projectId === project.id && statusForRun(run, now) === 'unknown');
+      const projectRuns = runs.filter((run) => run.projectId === project.id);
+      const blocked = projectRuns.some((run) => statusForRun(run, now) === 'blocked');
+      const activity = countRunActivity(projectRuns, now);
       return <button key={project.id} className={`project-summary ${selected === project.id ? 'selected' : ''}`}
         onClick={() => onSelect(project.id)} aria-pressed={selected === project.id}>
         <div className="project-identity"><span className="project-dot" style={{ background: project.color }} aria-hidden="true" />
@@ -17,7 +19,7 @@ export function ProjectStrip({ projects, runs, selected, now, onSelect }: {
         <p className="field-label">当前小阶段</p>
         <p className={`project-step ${!project.step ? 'muted' : ''}`}>{project.step ? `${project.step.id} · ${project.step.name}` : '等待制作人确认'}</p>
         <div className="project-meta"><span title={project.lastReportedAt}><Clock3 size={15} />{project.lastReportedAt ? `最后上报 · ${formatRelativeTime(project.lastReportedAt, now)}` : '尚无制作人上报'}</span>
-          {blocked ? <span className="warning"><TriangleAlert size={14} />有阻塞</span> : project.stage ? <span className={stale ? 'muted' : 'accent'}>{stale ? '状态待确认' : '暂无阻塞'}</span> : null}
+          {blocked ? <span className="warning"><TriangleAlert size={14} />有阻塞 · {activity.active} 活跃</span> : activity.active ? <span className="accent">{activity.active} 活跃</span> : activity.unconfirmed ? <span className="muted">{activity.unconfirmed} 待确认</span> : projectRuns.length ? <span className="muted">暂无活跃上报</span> : null}
         </div>
       </button>;
     })}
