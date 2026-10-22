@@ -1,5 +1,9 @@
 export type ProjectId = '3match' | 'cat-and-dog' | 'incremental-xxx';
-export type AgentRole = 'game-producer' | 'game-tech-lead' | 'game-developer' | 'game-verifier';
+export const AGENT_ROLES = [
+  'game-producer', 'game-tech-lead', 'game-developer', 'game-verifier',
+  'game-art-lead', 'game-asset-artist', 'game-ui-artist', 'game-vfx-artist',
+] as const;
+export type AgentRole = typeof AGENT_ROLES[number];
 export type RunStatus =
   | 'running'
   | 'blocked'
@@ -81,6 +85,10 @@ export const ROLE_LABELS: Record<AgentRole, string> = {
   'game-tech-lead': '技术负责人',
   'game-developer': '开发',
   'game-verifier': '验收',
+  'game-art-lead': '美术统筹',
+  'game-asset-artist': '原画与资产',
+  'game-ui-artist': 'UI设计',
+  'game-vfx-artist': '动效与特效',
 };
 
 export const STATUS_LABELS: Record<DisplayStatus, string> = {

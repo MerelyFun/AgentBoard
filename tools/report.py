@@ -12,12 +12,18 @@ from datetime import datetime, timezone
 from transport import flush_outbox
 
 ROOT = Path(__file__).resolve().parents[1]
-ROLES = ("game-producer", "game-tech-lead", "game-developer", "game-verifier")
+ART_ROLES = ("game-art-lead", "game-asset-artist", "game-ui-artist", "game-vfx-artist")
+ROLES = ("game-producer", "game-tech-lead", "game-developer", "game-verifier", *ART_ROLES)
+SUBMITTING_ROLES = ("game-developer", "game-tech-lead", *ART_ROLES)
 PARENT_ROLES = {
     "game-producer": (),
     "game-tech-lead": ("game-producer",),
     "game-developer": ("game-producer", "game-tech-lead"),
     "game-verifier": ("game-producer",),
+    "game-art-lead": ("game-producer", "game-tech-lead"),
+    "game-asset-artist": ("game-producer", "game-tech-lead", "game-art-lead"),
+    "game-ui-artist": ("game-producer", "game-tech-lead", "game-art-lead"),
+    "game-vfx-artist": ("game-producer", "game-tech-lead", "game-art-lead"),
 }
 KINDS = ("checkpoint", "blocked", "unblocked", "submitted", "verification", "stopped", "cancelled")
 
@@ -91,7 +97,7 @@ def begin(args):
     supplied = {"project_id": args.project, "milestone": milestone, "step": step}
     if parent:
         if parent["role"] not in PARENT_ROLES[args.role]:
-            raise ValueError("派工关系应为制作人→lead→开发，或制作人直接派开发/验收")
+            raise ValueError("父角色不支持本次派工；技术负责人/验收由制作人派发，美术负责人可由制作人/技术负责人关联，美术执行可关联制作人/技术负责人/美术负责人")
         if any(value is not None and parent[key] != value for key, value in supplied.items()):
             raise ValueError("子任务的项目/阶段必须与 parent 一致；阶段切换后请使用新的 parent run")
         supplied = {key: parent[key] for key in supplied}
@@ -120,8 +126,8 @@ def report_event(args):
             raise ValueError("verification 仅供 game-verifier，且必须指定 --verdict")
     elif args.verdict:
         raise ValueError("--verdict 只能与 verification 一起使用")
-    if args.kind == "submitted" and context["role"] not in ("game-developer", "game-tech-lead"):
-        raise ValueError("submitted 仅供开发/技术负责人；制作人用 checkpoint 交接")
+    if args.kind == "submitted" and context["role"] not in SUBMITTING_ROLES:
+        raise ValueError("submitted 仅供开发/技术负责人/美术角色交付；制作人用 checkpoint 交接")
     return enqueue(context, args.kind, args.summary, args.evidence, args.verdict)
 
 

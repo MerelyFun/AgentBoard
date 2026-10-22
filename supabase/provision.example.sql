@@ -4,7 +4,11 @@ insert into private.agentboard_writers(token_hash, role) values
   ('<producer_sha256_hex>', 'game-producer'),
   ('<tech_lead_sha256_hex>', 'game-tech-lead'),
   ('<developer_sha256_hex>', 'game-developer'),
-  ('<verifier_sha256_hex>', 'game-verifier');
+  ('<verifier_sha256_hex>', 'game-verifier'),
+  ('<art_lead_sha256_hex>', 'game-art-lead'),
+  ('<asset_artist_sha256_hex>', 'game-asset-artist'),
+  ('<ui_artist_sha256_hex>', 'game-ui-artist'),
+  ('<vfx_artist_sha256_hex>', 'game-vfx-artist');
 insert into private.agentboard_access_codes(token_hash, viewer_email)
   values ('<viewer_sha256_hex>', 'agentboard-<random_uuid>@example.invalid');
 

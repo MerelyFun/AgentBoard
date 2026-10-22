@@ -37,10 +37,12 @@ describe('reported activity freshness', () => {
 });
 
 describe('board filters', () => {
-  it('supports four role labels and filters technical leadership independently from developers', () => {
+  it('supports eight role labels and filters technical leadership independently from developers', () => {
     expect(ROLE_LABELS).toEqual({
       'game-producer': '制作人', 'game-tech-lead': '技术负责人',
       'game-developer': '开发', 'game-verifier': '验收',
+      'game-art-lead': '美术统筹', 'game-asset-artist': '原画与资产',
+      'game-ui-artist': 'UI设计', 'game-vfx-artist': '动效与特效',
     });
     const runs = snapshot().runs;
     const leads = filterRuns(runs, { role: 'game-tech-lead', query: '技术负责人' }, NOW);
@@ -50,20 +52,35 @@ describe('board filters', () => {
     expect(runs.find((run) => run.id === 'demo-cat-developer-b')?.parentRunId).toBe('demo-cat-developer-a');
   });
 
+  it.each([
+    ['game-art-lead', '美术统筹'], ['game-asset-artist', '原画与资产'],
+    ['game-ui-artist', 'UI设计'], ['game-vfx-artist', '动效与特效'],
+  ] as const)('filters explicit %s reports without reclassifying developer summaries', (role, label) => {
+    const original = snapshot().runs[0];
+    const artist = { ...original, id: `art-${role}`, role, label };
+    const developer = { ...original, id: 'legacy-art', role: 'game-developer' as const,
+      summary: `岗位 ${role}：${label}` };
+    const runs = [artist, developer];
+    expect(filterRuns(runs, { role, query: label }, NOW)).toEqual([artist]);
+    expect(filterRuns(runs, { role: 'game-developer' }, NOW)).toEqual([developer]);
+    expect(filterRuns(runs, { role, status: 'running' }, NOW)).toEqual([artist]);
+    expect(filterRuns([{ ...artist, lastReportedAt: '2020-01-01T00:00:00Z' }], { role, status: 'running' }, NOW)).toEqual([]);
+  });
+
   it('combines project, role, displayed status and multiword phase/task search', () => {
     const runs = snapshot().runs;
     expect(filterRuns(runs, {
       projectId: 'cat-and-dog', role: 'game-developer', status: 'submitted',
       query: '毛球街 M1a 重试 开发',
     }, NOW).map((run) => run.id)).toEqual(['demo-cat-developer-b']);
-    expect(filterRuns(runs, { query: '3MATCH 平台' }, NOW)).toHaveLength(2);
+    expect(filterRuns(runs, { query: '3MATCH 平台' }, NOW)).toHaveLength(3);
     expect(filterRuns(runs, { query: '两块地 自动经营', status: 'unknown' }, NOW)).toHaveLength(1);
     expect(filterRuns(runs, { projectId: '3match', role: 'game-verifier' }, NOW)).toEqual([]);
   });
 
   it('searches phase names and does not confuse raw status with displayed freshness', () => {
     const runs = snapshot().runs;
-    expect(filterRuns(runs, { query: '  环境与平台风险  ' }, NOW)).toHaveLength(2);
+    expect(filterRuns(runs, { query: '  环境与平台风险  ' }, NOW)).toHaveLength(3);
     expect(filterRuns(runs, { status: 'running' }, NOW).every((run) => run.id !== 'demo-incremental-developer')).toBe(true);
     expect(filterRuns(runs, { query: '待确认' }, NOW).map((run) => run.id)).toEqual(['demo-incremental-developer']);
     expect(filterRuns(runs, { projectId: 'all', role: 'all', status: 'all', query: '  ' }, NOW)).toEqual(runs);
@@ -113,8 +130,9 @@ describe('demo isolation', () => {
   it('keeps real project metadata free of invented progress', () => {
     expect(PROJECTS).toHaveLength(3);
     expect(PROJECTS.every((project) => project.stage === undefined && project.lastReportedAt === undefined)).toBe(true);
-    expect(snapshot().runs).toHaveLength(7);
-    expect(snapshot().events).toHaveLength(10);
+    expect(snapshot().runs).toHaveLength(11);
+    expect(snapshot().events).toHaveLength(14);
+    expect(new Set(snapshot().runs.map((run) => run.role)).size).toBe(8);
   });
 
   it('creates independent examples relative to the requested time', () => {

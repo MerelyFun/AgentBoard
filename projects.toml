@@ -1,17 +1,29 @@
 [projects.3match]
 name = "3Match"
 root = "E:/Code/3Match"
+repo_root = "E:/Code/3Match/3Match/3Match"
+github_repository = "MerelyFun/3Match"
+default_branch = "main"
+worktree_root = "E:/Code/3Match/worktree"
 state = "docs/STATE.md"
 roadmap = "docs/ROADMAP.md"
 
 [projects.cat-and-dog]
 name = "CatAndDog"
 root = "E:/Code/CatAndDog"
+repo_root = "E:/Code/CatAndDog/CatAndDog/CatAndDog"
+github_repository = "MerelyFun/CatAndDog"
+default_branch = "main"
+worktree_root = "E:/Code/CatAndDog/worktree"
 state = "docs/STATE.md"
 roadmap = "docs/DEVELOPMENT_ROADMAP.md"
 
 [projects.incremental-xxx]
 name = "IncrementalXxx"
 root = "E:/Code/IncrementalXxx"
+repo_root = "E:/Code/IncrementalXxx/IncrementalXxx"
+github_repository = "MerelyFun/IncrementalXxx"
+default_branch = "main"
+worktree_root = "E:/Code/IncrementalXxx/worktree"
 state = "docs/STATE.md"
 roadmap = "docs/ROADMAP.md"

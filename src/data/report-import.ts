@@ -1,5 +1,5 @@
 import {
-  PROJECTS, ROLE_LABELS,
+  AGENT_ROLES, PROJECTS, ROLE_LABELS,
   type AgentRole, type AgentRun, type BoardSnapshot, type Now, type ProjectId,
   type RunStatus, type StageRef, type VerificationVerdict,
 } from '../domain/board';
@@ -42,7 +42,10 @@ interface ParsedReport {
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const ROLES = ['game-producer', 'game-tech-lead', 'game-developer', 'game-verifier'] as const;
+const SUBMISSION_ROLES: readonly AgentRole[] = [
+  'game-developer', 'game-tech-lead',
+  'game-art-lead', 'game-asset-artist', 'game-ui-artist', 'game-vfx-artist',
+];
 const KINDS = ['started', 'checkpoint', 'blocked', 'unblocked', 'submitted', 'verification', 'stopped', 'cancelled'] as const;
 const VERDICTS = ['pass', 'fail', 'inconclusive'] as const;
 const REQUIRED_KEYS = ['schema_version', 'event_id', 'occurred_at', 'run_id', 'instance_id',
@@ -117,15 +120,15 @@ function parseReport(file: { name: string; text: string }): ParsedReport {
   const value = record(raw, file.name, '事件');
   keys(value, REQUIRED_KEYS, ['verdict'], file.name, '事件');
   if (value.schema_version !== 1) fail(file.name, '仅支持 schema_version 1');
-  const role = choice(value.role, ROLES, file.name, 'role');
+  const role = choice(value.role, AGENT_ROLES, file.name, 'role');
   const kind = choice(value.kind, KINDS, file.name, 'kind');
   const projectId = choice(value.project_id, PROJECTS.map((project) => project.id), file.name, 'project_id');
   if (typeof value.lead !== 'boolean') fail(file.name, 'lead 必须是布尔值');
   if (value.lead && role !== 'game-developer' && role !== 'game-tech-lead') {
     fail(file.name, '仅 game-developer 或 game-tech-lead 可以 lead=true');
   }
-  if (kind === 'submitted' && role !== 'game-developer' && role !== 'game-tech-lead') {
-    fail(file.name, 'submitted 仅供 game-developer 或 game-tech-lead');
+  if (kind === 'submitted' && !SUBMISSION_ROLES.includes(role)) {
+    fail(file.name, `submitted 仅供 ${SUBMISSION_ROLES.join(' / ')}`);
   }
   let verdict: VerificationVerdict | undefined;
   if (kind === 'verification') {

@@ -1,4 +1,4 @@
-"""Install these four personal Codex roles without modifying config.toml."""
+"""Install the gameplay and art Codex roles without modifying config.toml."""
 
 import os
 from pathlib import Path
@@ -7,7 +7,10 @@ import sys
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
-ROLES = ("game-producer", "game-tech-lead", "game-developer", "game-verifier")
+ROLES = (
+    "game-producer", "game-tech-lead", "game-developer", "game-verifier",
+    "game-art-lead", "game-asset-artist", "game-ui-artist", "game-vfx-artist",
+)
 
 
 def main():

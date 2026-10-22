@@ -46,6 +46,19 @@ describe('event ownership and stable agent identities', () => {
     expect(resolveEventRun(makeEvent({ runId: 'missing' }), [run])).toBeUndefined();
   });
 
+  it('keeps art role identity explicit and stable across filtering and event ownership', () => {
+    const artist = makeRun({ role: 'game-ui-artist', label: 'UI设计' });
+    const parallel = makeRun({ id: 'run-2', role: 'game-ui-artist', instanceId: 'aaaa0000-0000-0000-0000-000000002222' });
+    const runs = [artist, parallel];
+    const report = makeEvent({ role: 'game-ui-artist' });
+    expect(getAgentIdentity(artist, runs)).toMatchObject({ roleLabel: 'UI设计', shortId: 'aaaa…1111' });
+    expect(getAgentIdentity(report, runs)).toEqual(getAgentIdentity(artist, runs));
+    expect(getAgentIdentity(artist, [parallel, artist])).toEqual(getAgentIdentity(artist, runs));
+    expect(filterBoardRuns(runs, { role: 'game-ui-artist', query: 'UI设计 aaaa…1111' }, NOW)).toEqual([artist]);
+    expect(filterBoardEvents([report], runs, { role: 'game-ui-artist', query: 'UI设计 aaaa…1111' }, NOW)).toEqual([report]);
+    expect(resolveEventRun({ ...report, role: 'game-art-lead' }, runs)).toBeUndefined();
+  });
+
   it('labels run fallback honestly and leaves missing ownership explicit', () => {
     const run = makeRun({ instanceId: undefined });
     expect(getAgentIdentity(run)).toMatchObject({ shortId: run.id, idLabel: '执行编号', linked: true });

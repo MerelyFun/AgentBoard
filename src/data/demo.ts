@@ -59,6 +59,18 @@ export function createDemoSnapshot(now: Now = Date.now()): BoardSnapshot {
       status: 'running', lastReportedAt: at(26), summary: '上次报告正在接入经理自动经营，后续状态待确认。',
     },
   ];
+  // Explicit art examples stay in the opt-in demo source, never in cloud metadata.
+  const artExamples = [
+    { id: 'demo-match-art-lead', projectId: '3match' as const, role: 'game-art-lead' as const, label: '美术统筹', task: '收敛棋盘与魔女的视觉方向', parentRunId: 'demo-match-producer' },
+    { id: 'demo-cat-asset', projectId: 'cat-and-dog' as const, role: 'game-asset-artist' as const, label: '原画与资产', task: '绘制猫狗角色与街景样件', parentRunId: 'demo-cat-producer' },
+    { id: 'demo-cat-ui', projectId: 'cat-and-dog' as const, role: 'game-ui-artist' as const, label: 'UI设计', task: '优化单局 HUD 的按钮层级', parentRunId: 'demo-cat-producer' },
+    { id: 'demo-incremental-vfx', projectId: 'incremental-xxx' as const, role: 'game-vfx-artist' as const, label: '动效与特效', task: '制作收获金币与收益跳字反馈' },
+  ];
+  for (const [index, example] of artExamples.entries()) runs.push({
+    ...example, instanceId: `demo-art-instance-${index}`, stage: stageByProject[example.projectId],
+    step: stepByProject[example.projectId], status: 'running', lastReportedAt: at(index + 1),
+    summary: `演示：${example.task}，尚待样件评审。`,
+  });
   const events: BoardEvent[] = [
     { id: 'demo-event-10', projectId: 'cat-and-dog', runId: 'demo-cat-developer-a', role: 'game-tech-lead', kind: 'checkpoint', at: at(1), summary: '开始集成胜败判定与重试状态复位模块。' },
     { id: 'demo-event-09', projectId: '3match', runId: 'demo-match-producer', role: 'game-producer', kind: 'stage_confirmed', at: at(2), summary: '确认当前为 M0：竖屏交互与构建验证。' },
@@ -71,6 +83,10 @@ export function createDemoSnapshot(now: Now = Date.now()): BoardSnapshot {
     { id: 'demo-event-02', projectId: 'incremental-xxx', runId: 'demo-incremental-developer', role: 'game-developer', kind: 'checkpoint', at: at(26), summary: '开始接入经理自动经营，尚无新的后续报告。' },
     { id: 'demo-event-01', projectId: 'incremental-xxx', runId: 'demo-incremental-verifier', role: 'game-verifier', kind: 'verification', at: at(32), summary: '演示：收益预览与结算公式检查通过。', evidence: ['演示证据：同一组参数下结果一致。'] },
   ];
+  for (const [index, example] of artExamples.entries()) events.push({
+    id: `demo-art-event-${index}`, projectId: example.projectId, runId: example.id, role: example.role,
+    kind: 'checkpoint', at: at(index + 1), summary: `演示：${example.task}，提交本轮样件进展。`,
+  });
   return {
     projects: PROJECTS.map((project) => ({
       ...project,

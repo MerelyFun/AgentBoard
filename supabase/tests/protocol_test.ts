@@ -1,4 +1,4 @@
-import { sha256, validateReport, writerAllows } from '../functions/_shared/protocol.ts';
+import { ART_ROLES, sha256, validateReport, writerAllows } from '../functions/_shared/protocol.ts';
 import { allowedOrigin, readJson, respond } from '../functions/_shared/http.ts';
 
 function assert(value: unknown, message = 'assertion failed'): asserts value { if (!value) throw new Error(message); }
@@ -46,6 +46,18 @@ Deno.test('enforces actions and keeps legacy developer lead compatibility', () =
   assert(validateReport({ ...base(), role: 'game-developer', lead: true, kind: 'submitted' }).lead);
   assert(validateReport({ ...base(), role: 'game-tech-lead', lead: false, kind: 'submitted' }).lead);
   assert(validateReport({ ...base(), role: 'game-verifier', kind: 'verification', verdict: 'inconclusive' }).verdict === 'inconclusive');
+});
+Deno.test('art roles submit in their own identity but cannot claim technical lead or verification', () => {
+  for (const role of ART_ROLES) {
+    const event = validateReport({ ...base(), role, kind: 'submitted', evidence: ['assets/review.png'] });
+    assert(event.role === role && event.lead === false && event.verdict === undefined);
+    assert(writerAllows(event, { role, project_ids: ['3match'] }));
+    assert(!writerAllows(event, { role: 'game-developer', project_ids: ['3match'] }));
+    throws(() => validateReport({ ...base(), role, lead: true }));
+    throws(() => validateReport({ ...base(), role, kind: 'verification', verdict: 'pass' }));
+    throws(() => validateReport({ ...base(), role, kind: 'submitted', verdict: 'pass' }));
+  }
+  throws(() => validateReport({ ...base(), role: 'game-artist' }));
 });
 Deno.test('SHA-256 is hex and deterministic without persisting raw credentials', async () => {
   assert(await sha256('abc') === 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
