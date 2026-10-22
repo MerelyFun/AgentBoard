@@ -1,4 +1,6 @@
-# AgentBoard 工作室 V2
+# AgentBoard 多执行工作室
+
+当前布局以 `scalable-office-concept.png` 与 [多人设计说明](scalable-office.md) 为准：按项目聚焦、固定场景和可翻页工位，名单与事件有界展示。V2 三张运行图片继续原样复用，其生成和来源记录保留如下。
 
 当前参考为 `office-concept-v2.png`。按 `game-art`、`create-game-assets`、`game-ui-ux`、`game-feel` 重做空间、资产和信息层次；具体约束见 `art-direction-v2.md`，源稿、尺寸、透明度、SHA 和验收记录见 `asset-manifest-v2.json`。
 

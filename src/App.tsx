@@ -59,6 +59,7 @@ export default function App() {
   const scopedTotal = filterRunsByActivity(filterBoardRuns(snapshot.runs, { projectId }, now), activityScope, now).length;
   const scopeCounts = countRunActivity(filterBoardRuns(snapshot.runs, { projectId, role, query }, now), now);
   const selectedProject = PROJECTS.find((p) => p.id === projectId);
+  const viewKey = JSON.stringify([source, projectId, role, status, query, activityScope]);
   function resetFilters() { setProjectId('all'); setRole('all'); setStatus('all'); setQuery(''); }
   function changeSource(next: Source) { setSource(next); setActivityScope('active'); setRun(null); setEvent(null); setAuthError(''); resetFilters(); }
   function changeScope(next: ActivityScope) { setActivityScope(next); setStatus('all'); setRun(null); setEvent(null); }
@@ -127,13 +128,13 @@ export default function App() {
           <ActivitySwitcher scope={activityScope} counts={scopeCounts} onScope={changeScope} />
           <BoardFilters role={role} status={status} query={query} onRole={setRole} onStatus={changeStatus} onQuery={setQuery} onClear={() => { setRole('all'); setStatus('all'); setQuery(''); }} />
         </div>
-        {activityScope === 'active' ? <AgentOffice runs={runs} identityRuns={snapshot.runs} projectId={projectId} now={now} demo={source === 'demo'} onRun={setRun} /> : null}
+        {activityScope === 'active' ? <AgentOffice runs={runs} identityRuns={snapshot.runs} projectId={projectId} now={now} demo={source === 'demo'} viewKey={viewKey} onRun={setRun} /> : null}
         <div className="activity-layout">
-          <AgentList runs={runs} identityRuns={snapshot.runs} total={scopedTotal} now={now} demo={source === 'demo'} hasReports={snapshot.runs.length > 0} scope={activityScope} onShowAll={() => changeScope('all')}
+          <AgentList runs={runs} identityRuns={snapshot.runs} total={scopedTotal} now={now} demo={source === 'demo'} hasReports={snapshot.runs.length > 0} scope={activityScope} viewKey={viewKey} onShowAll={() => changeScope('all')}
             emptyTitle={source === 'cloud' ? cloudEmptyTitle : undefined} emptyDescription={source === 'cloud' ? cloudEmptyDescription : undefined}
             onConnect={source === 'cloud' ? () => setSettings(true) : undefined} connectLabel={cloud.phase === 'signed-out' ? '登录查看' : '连接设置'}
             onClear={resetFilters} onRun={setRun} onDemo={() => changeSource('demo')} onImport={() => fileInput.current?.click()} />
-          <EventTimeline events={events} runs={snapshot.runs} hasEvents={snapshot.events.length > 0} now={now} demo={source === 'demo'} onEvent={viewEvent} />
+          <EventTimeline events={events} runs={snapshot.runs} hasEvents={snapshot.events.length > 0} now={now} demo={source === 'demo'} viewKey={viewKey} onEvent={viewEvent} />
         </div>
       </main>
     </div>

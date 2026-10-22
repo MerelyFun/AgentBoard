@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Circle, MousePointer2, UsersRound } from 'lucide-react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { UsersRound } from 'lucide-react';
 import {
   PROJECTS, STATUS_LABELS, formatAbsoluteTime, statusForRun,
   type AgentRun, type Project, type ProjectId,
 } from '../domain/board';
 import { getAgentIdentity } from '../domain/presentation';
+import { Pagination, usePagination } from './Pagination';
 import './agent-office.css';
 
 interface AgentOfficeProps {
@@ -13,6 +14,7 @@ interface AgentOfficeProps {
   now: number;
   demo: boolean;
   projectId?: ProjectId | 'all';
+  viewKey?: string;
   onRun: (run: AgentRun) => void;
 }
 
@@ -56,63 +58,87 @@ function Workstation({ run, seat, identityRuns, now, onRun }: {
   </li>;
 }
 
-function DeskIsland({ project, occupants, index, identityRuns, now, mobileVisible, onRun }: {
+function DeskIsland({ project, occupants, index, identityRuns, now, onRun }: {
   project: Project;
   occupants: AgentRun[];
   index: number;
   identityRuns: AgentRun[];
   now: number;
-  mobileVisible: boolean;
   onRun: (run: AgentRun) => void;
 }) {
   return <section
     className={`office-island${occupants.length === 0 ? ' office-island-empty' : ''}`}
     data-project={project.id}
-    data-mobile-visible={mobileVisible}
-    aria-label={`${project.name} 共享工位${index > 0 ? ` ${index + 1}` : ''}`}
+    aria-label={`${project.name} 第 ${index + 1} 桌共享工位`}
   >
     <div className="office-island-scene">
-      <h3 className="office-project-plaque"><span className="office-project-mark" style={{ background: project.color }} aria-hidden="true" />{project.name}{index > 0 ? <small>{index + 1}</small> : null}</h3>
+      <h3 className="office-desk-number">共享桌 {String(index + 1).padStart(2, '0')}</h3>
       <div className="office-shared-desk" aria-hidden="true" />
       <ul className="office-workstations">
         {occupants.map((run, seat) => <Workstation key={run.id} run={run} seat={seat} identityRuns={identityRuns} now={now} onRun={onRun} />)}
       </ul>
-      {occupants.length === 0 ? <p className="office-empty-note">暂无活跃上报</p> : null}
     </div>
   </section>;
 }
 
-export function AgentOffice({ runs, identityRuns, now, demo, projectId = 'all', onRun }: AgentOfficeProps) {
-  const [mobileProject, setMobileProject] = useState<ProjectId>(projectId === 'all' ? PROJECTS[0].id : projectId);
+function officePageSize() {
+  if (typeof window === 'undefined') return 12;
+  if (window.matchMedia('(min-width: 1200px)').matches) return 12;
+  return window.matchMedia('(min-width: 768px)').matches ? 8 : 4;
+}
+
+function subscribeOfficeSize(onChange: () => void) {
+  const queries = ['(min-width: 1200px)', '(min-width: 768px)'].map((query) => window.matchMedia(query));
+  queries.forEach((query) => query.addEventListener('change', onChange));
+  return () => queries.forEach((query) => query.removeEventListener('change', onChange));
+}
+
+export function AgentOffice({ runs, identityRuns, now, demo, projectId = 'all', viewKey = '', onRun }: AgentOfficeProps) {
+  const [chosenProject, setChosenProject] = useState<ProjectId | null>(null);
   useEffect(() => {
-    setMobileProject(projectId === 'all' ? PROJECTS[0].id : projectId);
+    setChosenProject(null);
   }, [projectId]);
-  const projects = PROJECTS.filter((project) => projectId === 'all' || project.id === projectId);
-  const mobileCount = runs.filter((run) => run.projectId === mobileProject).length;
-  const islands = projects.flatMap((project) => {
-    // Sorting by the stable instance keeps desks steady when a new report reorders the list.
-    const occupants = runs.filter((run) => run.projectId === project.id)
-      .sort((left, right) => (left.instanceId || left.id).localeCompare(right.instanceId || right.id));
-    return Array.from({ length: Math.max(1, Math.ceil(occupants.length / 4)) }, (_, index) => ({
-      project, occupants: occupants.slice(index * 4, index * 4 + 4), index,
-    }));
-  });
+  const pageSize = useSyncExternalStore(subscribeOfficeSize, officePageSize, () => 12);
+  const projectCounts = useMemo(() => {
+    const counts = new Map<ProjectId, number>();
+    runs.forEach((run) => counts.set(run.projectId, (counts.get(run.projectId) ?? 0) + 1));
+    return counts;
+  }, [runs]);
+  // An automatic choice follows the first nonempty project. A deliberate empty choice stays visible.
+  const currentId = projectId !== 'all' ? projectId : chosenProject
+    ?? PROJECTS.find((project) => projectCounts.get(project.id))?.id ?? PROJECTS[0].id;
+  const project = PROJECTS.find((item) => item.id === currentId)!;
+  const occupants = useMemo(() => runs.filter((run) => run.projectId === currentId)
+    // Stable instance ordering prevents report timestamps from continually shuffling seats.
+    .sort((left, right) => (left.instanceId || left.id).localeCompare(right.instanceId || right.id)
+      || left.id.localeCompare(right.id)), [runs, currentId]);
+  const pager = usePagination(occupants.length, pageSize, JSON.stringify([viewKey, projectId, currentId]));
+  const visibleRuns = occupants.slice(pager.startIndex, pager.endIndex);
+  const islands = Array.from({ length: Math.ceil(visibleRuns.length / 4) }, (_, index) => ({
+    occupants: visibleRuns.slice(index * 4, index * 4 + 4), index: Math.floor(pager.startIndex / 4) + index,
+  }));
   return <section className="office-panel" aria-label="Agent 办公室">
     <div className="office-heading">
-      <div className="office-title"><h2>团队办公室</h2>{demo ? <span className="office-demo-label">演示</span> : null}</div>
-      <span className="office-headcount"><UsersRound size={15} aria-hidden="true" /><span className="office-desktop-count">{runs.length} 位活跃</span><span className="office-mobile-count">{mobileCount} 位活跃</span></span>
-    </div>
-    {projectId === 'all' ? <nav className="office-project-tabs" aria-label="办公室项目视图">
-      {PROJECTS.map((project) => <button key={project.id} type="button" aria-label={`${project.name} 办公室`} title={project.name} aria-pressed={mobileProject === project.id} onClick={() => setMobileProject(project.id)}>
-        <span className="office-tab-mark" style={{ background: project.color }} aria-hidden="true" /><span>{project.name}</span>
-      </button>)}
-    </nav> : null}
-    <div className="office-floor">
-      <div className={`office-islands${projects.length === 1 ? ' office-islands-single' : ''}`}>
-        {islands.map(({ project, occupants, index }) => <DeskIsland key={`${project.id}-${index}`} project={project} occupants={occupants} index={index} identityRuns={identityRuns} now={now} mobileVisible={project.id === mobileProject} onRun={onRun} />)}
+      <div className="office-heading-copy">
+        <div className="office-title"><UsersRound size={20} aria-hidden="true" /><h2>项目办公室 <span>{project.name}</span></h2>{demo ? <span className="office-demo-label">演示数据</span> : null}</div>
+        <p>{occupants.length} 个活跃执行 · 已应用全局筛选 · 点击工位查看任务</p>
       </div>
+      {projectId === 'all' ? <nav className="office-project-tabs" aria-label="办公室项目视图">
+        {PROJECTS.map((item) => <button key={item.id} type="button" aria-label={`${item.name} 办公室，${projectCounts.get(item.id) ?? 0} 个活跃执行`} title={item.name} aria-pressed={currentId === item.id} onClick={() => setChosenProject(item.id)}>
+          <span className="office-tab-mark" style={{ background: item.color }} aria-hidden="true" /><span className="office-tab-name">{item.name}</span><span className="office-tab-count">{projectCounts.get(item.id) ?? 0}</span>
+        </button>)}
+      </nav> : null}
     </div>
-    <div className="office-footnote"><span><MousePointer2 size={14} aria-hidden="true" />点击工位查看任务</span><span className="office-freshness"><Circle size={6} fill="currentColor" aria-hidden="true" />仅显示近期活跃上报</span></div>
+    <div className={`office-floor${occupants.length ? '' : ' office-floor-empty'}`}>
+      <div className="office-islands" data-desk-count={islands.length}>
+        {islands.map(({ occupants: deskRuns, index }) => <DeskIsland key={`${project.id}-${index}`} project={project} occupants={deskRuns} index={index} identityRuns={identityRuns} now={now} onRun={onRun} />)}
+      </div>
+      {occupants.length === 0 ? <div className="office-empty-note"><UsersRound size={24} aria-hidden="true" /><strong>办公室暂时安静</strong><p>当前项目没有符合筛选的活跃执行</p></div> : null}
+    </div>
+    <div className="office-footer">
+      <p className="office-current-project" aria-live="polite" aria-atomic="true">当前项目 <strong>{occupants.length}</strong> 个活跃执行 <span>· 显示 {pager.from}–{pager.to}</span></p>
+      <Pagination {...pager} onPageChange={pager.setPage} label="办公室分页" itemLabel="个执行" />
+    </div>
   </section>;
 }
 
