@@ -1,4 +1,6 @@
-export const ROLES = ['game-producer', 'game-tech-lead', 'game-developer', 'game-verifier'] as const;
+export const ART_ROLES = ['game-art-lead', 'game-asset-artist', 'game-ui-artist', 'game-vfx-artist'] as const;
+export const ROLES = ['game-producer', 'game-tech-lead', 'game-developer', 'game-verifier', ...ART_ROLES] as const;
+const SUBMITTING_ROLES: readonly string[] = ['game-developer', 'game-tech-lead', ...ART_ROLES];
 export const PROJECT_IDS = ['3match', 'cat-and-dog', 'incremental-xxx'] as const;
 export const KINDS = ['started', 'checkpoint', 'blocked', 'unblocked', 'submitted', 'verification', 'stopped', 'cancelled'] as const;
 export type Role = typeof ROLES[number];
@@ -53,7 +55,7 @@ export function validateReport(value: unknown): ReportEvent {
   if (item.schema_version !== 1 || typeof item.lead !== 'boolean') throw new Error('invalid_schema');
   const role = choice(item.role, ROLES), kind = choice(item.kind, KINDS);
   if (item.lead && role !== 'game-developer' && role !== 'game-tech-lead') throw new Error('invalid_lead');
-  if (kind === 'submitted' && role !== 'game-developer' && role !== 'game-tech-lead') throw new Error('invalid_role_action');
+  if (kind === 'submitted' && !SUBMITTING_ROLES.includes(role)) throw new Error('invalid_role_action');
   let verdict: ReportEvent['verdict'];
   if (kind === 'verification') {
     if (role !== 'game-verifier') throw new Error('invalid_role_action');

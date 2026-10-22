@@ -12,18 +12,24 @@ Pages 使用 GitHub Actions、强制 HTTPS。main 自动检查/构建/部署；P
 
 服务函数只用 Supabase runtime 内置凭证。部署前读当前官方文档，CLI 子命令先 --help，新迁移先 `supabase migration new`。DDL 后运行 Security/Performance Advisors，并以匿名/成员身份验证权限。
 
+八岗位沿用 `schema_version: 1` 和原事件字段。发布对应迁移与 ingest 校验后，前端和 reporter 均使用八种真实 role；不得依赖摘要把美术报告映射成开发。检查角色约束、父链允许关系、submitted 权限与 verifier 专用 verification 同步生效；`lead` 仅代表技术负责人，历史 developer+lead=true 仍兼容。既有运行记录保持原样，不回写角色或重建游戏进度。
+
 ## 本机配置
 
-`.local/transport.json` 已配置接收地址和四种角色令牌，原 Python 命令自动读取。配置示意（不得填写后提交）：
+`.local/transport.json` 应配置接收地址和八种角色各自的令牌，原 Python 命令自动读取。四个美术岗位分别注册自己的服务端哈希与项目写入授权，不能复用 game-developer 身份。下列仅为占位示意，不含实际令牌；真实配置不得提交：
 
 ```json
 {
   "endpoint": "https://PROJECT.supabase.co/functions/v1/agentboard-ingest",
   "tokens": {
-    "game-producer": "随机令牌",
-    "game-tech-lead": "随机令牌",
-    "game-developer": "随机令牌",
-    "game-verifier": "随机令牌"
+    "game-producer": "<producer-token>",
+    "game-tech-lead": "<tech-lead-token>",
+    "game-developer": "<developer-token>",
+    "game-verifier": "<verifier-token>",
+    "game-art-lead": "<art-lead-token>",
+    "game-asset-artist": "<asset-artist-token>",
+    "game-ui-artist": "<ui-artist-token>",
+    "game-vfx-artist": "<vfx-artist-token>"
   }
 }
 ```
@@ -36,4 +42,4 @@ Pages 使用 GitHub Actions、强制 HTTPS。main 自动检查/构建/部署；P
 
 ## 验证
 
-`npm run check`、Python unittest、生产构建通过后，用隔离 QA run/目录验证真实云端，阶段与摘要明确 QA，不能伪装游戏进度。只清理本次已知 QA ID，不删真实报告。正式网页还须检查登录、实时更新、匿名不可读，才能报告部署成功。
+`npm run check`、Python unittest、生产构建通过后，用隔离 QA run/目录验证真实云端，阶段与摘要明确 QA，不能伪装游戏进度。覆盖八岗位接收与显示、允许及拒绝的父链、美术 submitted、非 verifier 的 verification 拒绝，以及旧四角色记录可读。只清理本次已知 QA ID，不删真实报告。正式网页还须检查登录、实时更新、匿名不可读、办公室岗位筛选与小屏交互，才能报告部署成功。

@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "installed_on": "2026-10-22",
+  "installation_root": "$HOME/.agents/skills",
+  "skills": [
+    {
+      "name": "game-art",
+      "repository": "sickn33/agentic-awesome-skills",
+      "ref": "2984de11956e413008c6f98121cd141c499e47a3",
+      "path": "skills/game-development/game-art",
+      "license": "MIT",
+      "adaptations": [
+        "Move upstream risk/source/date_added under metadata; preserve instruction body",
+        "Add agents/openai.yaml",
+        "Retain upstream LICENSE"
+      ],
+      "files_sha256": {
+        "agents/openai.yaml": "0e7c674016403d6456a174da942a501300dd1198c24f9b813cb5a8ab39445787",
+        "LICENSE": "af98370a7edc0f00ec46979d049517833c9a7fa2ba74e3cf8cc42f7db557299d",
+        "SKILL.md": "9e95f1404960109fc28d5a88f590833d2c2c4b9a53e31196ed7e4017ca8522d1"
+      }
+    },
+    {
+      "name": "game-design",
+      "repository": "sickn33/agentic-awesome-skills",
+      "ref": "2984de11956e413008c6f98121cd141c499e47a3",
+      "path": "skills/game-development/game-design",
+      "license": "MIT",
+      "adaptations": [
+        "Move upstream risk/source/date_added under metadata; preserve instruction body",
+        "Add agents/openai.yaml",
+        "Retain upstream LICENSE"
+      ],
+      "files_sha256": {
+        "agents/openai.yaml": "1523ee95ffa1c60016f96f1549e72649e1a5f4255cdbf7877eacd7194d318a6e",
+        "LICENSE": "af98370a7edc0f00ec46979d049517833c9a7fa2ba74e3cf8cc42f7db557299d",
+        "SKILL.md": "28825350159c56b9f5ebf687631e8f501be589de2cb32e9a02373c6b35dec7f6"
+      }
+    },
+    {
+      "name": "create-game-assets",
+      "repository": "gamedev-skills/awesome-gamedev-agent-skills",
+      "ref": "0a70cfc64672d512c5b5b6006b5dcb5cf90dbdbd",
+      "path": "skills/disciplines/create-game-assets",
+      "license": "Apache-2.0",
+      "adaptations": [
+        "Retain upstream LICENSE"
+      ],
+      "files_sha256": {
+        "agents/openai.yaml": "b5ff9e75ab8a845324d28745aa97af0a3cd4fccc56067a6494947e12e40f1990",
+        "assets/art-direction-brief.md": "6d5dc4f9f5fcb24300bab9ce7dbd56d5c948ba41da3cca2d3b3d235fee5fb72c",
+        "assets/asset-manifest.json": "6cce05638c11b80eb5c8f776cf187f479a2579f1a1729b0970b1cc8e5fab4c8e",
+        "LICENSE": "6f82dcfeb95a1c0a0452180a3b16f21bf82111780018fed59d95a052b5b75f6c",
+        "references/art-direction.md": "19b2ccb827eae0c6c4cd3648ab7febb82e44706bef8515f2e8912de23dec0a5c",
+        "references/provenance.md": "2c2b30c69dec5c006c91ecbf506fce2ae3f857b5cc82bda9a10ddb5b769c7586",
+        "references/raster-pipeline.md": "834ecaeb35e61fc50ed5fbd518942f767f0717d1ab641822234a1f9cbe5eeb6f",
+        "references/three-d-pipeline.md": "8278baa203b7cd560d9fc5688c33489a9c478275c1795def119b7e024b27d03e",
+        "scripts/asset_report.py": "93e364f095261b44f6fd0345f7132019af1af93e81ebd84d91fe2a5049918203",
+        "scripts/build_preview_sheet.py": "002a550a7b5fac6d8815078a72afc249dd828c40d975b2323223fc770118c64b",
+        "scripts/requirements.txt": "1954ca940740c612a12e7abf0a307b7394715964d66dc8037d503fdd5c1b6424",
+        "SKILL.md": "c178cde20316f7d326f2a853a76522b375b325346b5b8797ef52aa98740aff18"
+      }
+    },
+    {
+      "name": "game-ui-ux",
+      "repository": "gamedev-skills/awesome-gamedev-agent-skills",
+      "ref": "0a70cfc64672d512c5b5b6006b5dcb5cf90dbdbd",
+      "path": "skills/disciplines/game-ui-ux",
+      "license": "Apache-2.0",
+      "adaptations": [
+        "Retain upstream LICENSE"
+      ],
+      "files_sha256": {
+        "LICENSE": "6f82dcfeb95a1c0a0452180a3b16f21bf82111780018fed59d95a052b5b75f6c",
+        "references/layout-and-flow.md": "000d944db77155ebf97fde035a3d4fbe69ef0ae348e9dbcaff48c5ea134d7d69",
+        "SKILL.md": "8a094c84a377503aa8f4c40df676d1c6b6fc07d36ff95554ce06467f1614397e"
+      }
+    },
+    {
+      "name": "game-feel",
+      "repository": "gamedev-skills/awesome-gamedev-agent-skills",
+      "ref": "0a70cfc64672d512c5b5b6006b5dcb5cf90dbdbd",
+      "path": "skills/disciplines/game-feel",
+      "license": "Apache-2.0",
+      "adaptations": [
+        "Retain upstream LICENSE"
+      ],
+      "files_sha256": {
+        "LICENSE": "6f82dcfeb95a1c0a0452180a3b16f21bf82111780018fed59d95a052b5b75f6c",
+        "references/feedback-recipes.md": "c1d0c4d9480bf4cd729ca99f2b36ebc1f3f264a873b408f2145898841e5d6685",
+        "SKILL.md": "68fc818ad939151be2db9e358e4295a71830c19d61f3aff849f1599307f39f9d"
+      }
+    },
+    {
+      "name": "shader-programming",
+      "repository": "gamedev-skills/awesome-gamedev-agent-skills",
+      "ref": "0a70cfc64672d512c5b5b6006b5dcb5cf90dbdbd",
+      "path": "skills/disciplines/shader-programming",
+      "license": "Apache-2.0",
+      "adaptations": [
+        "Retain upstream LICENSE"
+      ],
+      "files_sha256": {
+        "LICENSE": "6f82dcfeb95a1c0a0452180a3b16f21bf82111780018fed59d95a052b5b75f6c",
+        "references/effects.md": "bf0665485e8b12d42d4bd6cfe5d1ebd93fbcef315b703e4657f0d40a23224975",
+        "SKILL.md": "e89558b15691c891e12cece81d4bafd4d61159bd4de2ae580ac109aecadca7ad"
+      }
+    }
+  ]
+}

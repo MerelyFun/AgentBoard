@@ -4,10 +4,23 @@
 
 当前阶段：GitHub Pages 已发布，主动上报到正式网页的实时链路已验收。用户已授权 MerelyFun 账号发布。
 
+2026-10-22 当前更新：八岗位真实 role 已贯通 reporter、Edge、数据库与网页；美术统筹、原画/资产、UI设计、动效/特效可独立上报与提交。制作人与美术领域平权，技术负责人负责集成，verifier 独立验收。六个 GitHub skills 与制作规范已落实，后续提示词见 `agents/START_ART.md`。网页改为森林绿游戏工作室、共享木地板与真实人物工位；当前发布验证见下节。未启动三个游戏的美术生产、未改游戏 STATE。
+
 网页：https://xn--hyvt5k.club/AgentBoard/  
 仓库：https://github.com/MerelyFun/AgentBoard
 
-## 已完成
+## 八岗位与工作室更新（2026-10-22）
+
+- 数据库迁移 `20261022045506_art_roles.sql` 已应用；agentboard-ingest ACTIVE v2，agentboard-access 保持 v2。旧任务/事件不重写，旧 developer lead 兼容；父子关系在先到父/后到父两种顺序校验。
+- 本机 `.local/transport.json` 已增四份独立美术 token，服务器仅存哈希，旧 token/访问码保持有效；私表、service-only RPC 与成员 RLS 边界不变。
+- 四个标为 QA 的新岗位实际 HTTP 上报成功；重复事件精确 ACK，错用岗位 token 返回 403，美术自报验收返回 400。QA 不使用 producer，不改项目阶段，测试完成后只按本轮精确 UUID 清理。
+- 浏览器登录后四个美术工位实时出现，提交后无需刷新即转入历史；退出清空私有数据。已定向清理本轮 4 个执行 / 8 条事件，保留原有 3 项目 / 56 执行 / 219 事件，项目快照逐项未变。
+- Python 29 项、TypeScript/Vitest 83 项、Edge 9 项通过；隔离 PostgreSQL 执行新旧迁移，覆盖合法/非法父子双顺序、跨阶段、去重、不可改上下文、乱序和权限。
+- 最新办公室与概念图对照通过：1536/1024/768/390/320px 无横向溢出；项目/角色/状态/搜索、空办公室、键盘打开详情与 Escape、减少动态效果通过，浏览器无错误。桌面人物 155px，手机 125px；手机保留完整两级阶段。证据在本机任务目录 `artifacts/office-desktop.png`、`office-mobile-scene.png`、`qa-results.json`。
+- 发布前独立审查无阻断：八岗位身份、提交/验收权限、parent、迁移及文档一致；本轮前端将由 Pages 工作流发布，发布结果以该工作流及正式网页复测为准。
+- 办公室运行素材为两份 WebP，合计 585,678 字节。没有新增前端依赖、3D 引擎、视频或远程字体。视觉参考与来源见 `design/README.md`。
+
+## 此前已完成（四岗位版本，历史记录）
 
 - 四角色 / v1 事件协议不变；原 Python begin/event 已支持先写 outbox、自动有界发送和准确 ACK 归档。新增 flush，网络失败不影响开发。
 - Supabase llcgzbyvpchabvodytrc：已应用 20261021173234_agentboard_cloud.sql，角色 token / viewer code 哈希已配置，agentboard-ingest ACTIVE v1、agentboard-access ACTIVE v2。
@@ -21,6 +34,17 @@
 - 新增三项目办公室：真实活跃执行对应角色小人，工作时打字、受阻时暂停，点击查看任务和大小阶段；空项目保留空座位，手机改为纵向工位。
 
 ## 已验证
+
+### 角色与技能配置验证（2026-10-22 上一轮，仅配置阶段）
+
+- 八份角色 TOML 解析通过，已运行 `python tools/install_roles.py`，个人安装与源文件逐字节一致；再次运行全部 unchanged。原有配置与未提交版本备份于本机 `.local/backups/art-team-20261022-123320/`。
+- 六个 skill 通过系统 `quick_validate.py`，UI metadata 可解析；固定来源、适配与 27 个文件 SHA-256 见 `agents/SKILLS.lock.json`。game-art/game-design 仅调整 frontmatter 兼容字段并补 UI metadata，指令正文未改变；上游原文和许可证保留。
+- 独立行为审查覆盖未过前置门的 CatAndDog 与“动画回调发奖/共享主区写资产”场景；修正角色绝对路径及“唯一技术 lead”措辞，明确前置门期间仅做获准的评审/基线等工作、同一切片复用样件证据。
+- 隔离目录中验证四个美术岗位以 developer 类上报：begin、submitted、stopped 均本地 queued，真实岗位及继承阶段保留；自报 verification 被拒绝。未使用真实传输配置，未写线上执行记录。
+- 资产 QA 脚本实跑：透明图尺寸/alpha 正例通过，错误尺寸与无 alpha 反例按预期失败，contact sheet 输出有效。使用人工测试夹具，未开始游戏资产创作。
+- Python 现有 26 项测试全通过，`git diff --check` 通过。本轮未改网页运行代码，不重复做浏览器/平台验收；不将这些配置检查称为游戏已能发布。
+
+### 既有网页与云端验证记录
 
 - TypeScript + Vitest 69 项；Python 26 项；生产构建通过。
 - 办公室与范围切换浏览器验收：1536px 桌面、768px 平板、390/320px 手机无横向溢出；工位详情、筛选联动、历史/待确认、空办公室和工作/受阻动画通过，控制台无告警或错误。

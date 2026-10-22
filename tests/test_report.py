@@ -90,6 +90,44 @@ class ReporterTest(unittest.TestCase):
         self.call("begin", "--role", "game-tech-lead", "--parent", lead["run_id"], "--task", "nested-lead", "--summary", "不创建第二层 lead", expected=1)
         self.assertEqual(len(self.events()), 2)
 
+    def test_art_parent_chain_inherits_context_and_keeps_technical_lead_separate(self):
+        producer = self.begin()
+        technical = self.call("begin", "--role", "game-tech-lead", "--parent", producer["run_id"], "--task", "integration", "--summary", "集成")
+        for parent in (producer, technical):
+            with self.subTest(art_lead_parent=parent["run_id"]):
+                art_lead = self.call("begin", "--role", "game-art-lead", "--parent", parent["run_id"], "--task", "art-direction", "--summary", "美术协调")
+                for role in ("game-asset-artist", "game-ui-artist", "game-vfx-artist"):
+                    artist = self.call("begin", "--role", role, "--parent", art_lead["run_id"], "--task", "art-slice", "--summary", "代表切片")
+                    context = json.loads((self.storage / "runs" / f"{artist['run_id']}.json").read_text(encoding="utf-8"))
+                    self.assertEqual(context["parent_run_id"], art_lead["run_id"])
+                    self.assertEqual(context["role"], role)
+                    self.assertFalse(context["lead"])
+                    self.assertEqual(context["milestone"], {"id": "M1", "name": "核心原型"})
+                    self.assertEqual(context["step"], {"id": "M1a", "name": "完整单局胜败与重试"})
+        self.assertEqual(len(self.events()), 10)
+
+    def test_artist_can_link_to_producer_or_technical_lead_but_not_peer_artist(self):
+        producer = self.begin()
+        technical = self.call("begin", "--role", "game-tech-lead", "--parent", producer["run_id"], "--task", "integration", "--summary", "集成")
+        for parent in (producer, technical):
+            for role in ("game-asset-artist", "game-ui-artist", "game-vfx-artist"):
+                self.call("begin", "--role", role, "--parent", parent["run_id"], "--task", "art", "--summary", "美术任务")
+        artist = self.begin("game-ui-artist")
+        for role in ("game-art-lead", "game-asset-artist", "game-ui-artist", "game-vfx-artist", "game-tech-lead", "game-verifier"):
+            self.call("begin", "--role", role, "--parent", artist["run_id"], "--task", "invalid-chain", "--summary", "非法关联", expected=1)
+        art_lead = self.begin("game-art-lead")
+        self.call("begin", "--role", "game-verifier", "--parent", art_lead["run_id"], "--task", "independent-check", "--summary", "验收须保持独立", expected=1)
+
+    def test_all_art_roles_submit_without_self_verification(self):
+        for role in ("game-art-lead", "game-asset-artist", "game-ui-artist", "game-vfx-artist"):
+            with self.subTest(role=role):
+                artist = self.begin(role)
+                self.call("event", "--run", artist["run_id"], "--kind", "submitted", "--summary", "美术交付待验收", "--evidence", "assets/review.png")
+                self.call("event", "--run", artist["run_id"], "--kind", "verification", "--verdict", "pass", "--summary", "不能自验", expected=1)
+        submissions = [event for event in self.events() if event["kind"] == "submitted"]
+        self.assertEqual(len(submissions), 4)
+        self.assertTrue(all(not event["lead"] and "verdict" not in event for event in submissions))
+
     def test_standalone_begin_requires_explicit_phase(self):
         result = self.call("begin", "--role", "game-producer", "--project", "3match", "--task", "plan", "--summary", "缺少两级阶段", expected=1)
         self.assertEqual(result["delivery"], "error")

@@ -105,6 +105,28 @@ describe('local report projection', () => {
     const techLead = importReportFiles([file(event({ role: 'game-tech-lead', lead: false }))]).runs[0];
     expect(techLead.lead).toBe(true);
   });
+
+  it.each([
+    ['game-art-lead', '美术统筹'], ['game-asset-artist', '原画与资产'],
+    ['game-ui-artist', 'UI设计'], ['game-vfx-artist', '动效与特效'],
+  ])('imports %s submissions as their reported role without assigning technical leadership', (role, label) => {
+    const snapshot = importReportFiles([
+      file(event({ role })),
+      file(event({ event_id: id(2), role, kind: 'submitted', occurred_at: '2026-10-22T04:01:00Z' })),
+      file(event({ event_id: id(3), role, kind: 'checkpoint', occurred_at: '2026-10-22T04:02:00Z' })),
+    ]);
+    expect(snapshot.runs).toHaveLength(1);
+    expect(snapshot.runs[0]).toMatchObject({ role, label, status: 'submitted', lead: false,
+      instanceId: 'codex-thread-a', stage: { id: 'M1' }, step: { id: 'M1a' } });
+    expect(snapshot.events.every((item) => item.role === role)).toBe(true);
+    expect(snapshot.projects.every((project) => project.stage === undefined)).toBe(true);
+  });
+
+  it('keeps legacy art summaries as developer reports instead of guessing a new role', () => {
+    const snapshot = importReportFiles([file(event({ summary: '[game-ui-artist] 岗位：UI设计' }))]);
+    expect(snapshot.runs[0]).toMatchObject({ role: 'game-developer', label: '开发' });
+    expect(snapshot.events[0].role).toBe('game-developer');
+  });
 });
 
 describe('all-or-nothing validation', () => {
@@ -135,6 +157,11 @@ describe('all-or-nothing validation', () => {
     expect(() => importReportFiles([file(event({ verdict: 'pass' }))])).toThrow(/只能出现在 verification/);
     expect(() => importReportFiles([file(event({ role: 'game-producer', kind: 'submitted' }))])).toThrow(/submitted 仅供/);
     expect(() => importReportFiles([file(event({ role: 'game-producer', lead: true }))])).toThrow(/仅 game-developer/);
+  });
+
+  it.each(['game-art-lead', 'game-asset-artist', 'game-ui-artist', 'game-vfx-artist'])('rejects technical lead and formal verification claims from %s', (role) => {
+    expect(() => importReportFiles([file(event({ role, lead: true }))])).toThrow(/仅 game-developer 或 game-tech-lead/);
+    expect(() => importReportFiles([file(event({ role, kind: 'verification', verdict: 'pass' }))])).toThrow(/仅供 game-verifier/);
   });
 
   it('rejects conflicting duplicate IDs and changing a run identity instead of silently overwriting', () => {
