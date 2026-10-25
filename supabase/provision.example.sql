@@ -5,6 +5,8 @@ insert into private.agentboard_writers(token_hash, role) values
   ('<tech_lead_sha256_hex>', 'game-tech-lead'),
   ('<developer_sha256_hex>', 'game-developer'),
   ('<verifier_sha256_hex>', 'game-verifier'),
+  ('<systems_designer_sha256_hex>', 'game-systems-designer'),
+  ('<balance_designer_sha256_hex>', 'game-balance-designer'),
   ('<art_lead_sha256_hex>', 'game-art-lead'),
   ('<asset_artist_sha256_hex>', 'game-asset-artist'),
   ('<ui_artist_sha256_hex>', 'game-ui-artist'),

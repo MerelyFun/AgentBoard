@@ -46,16 +46,16 @@ describe('event ownership and stable agent identities', () => {
     expect(resolveEventRun(makeEvent({ runId: 'missing' }), [run])).toBeUndefined();
   });
 
-  it('keeps art role identity explicit and stable across filtering and event ownership', () => {
-    const artist = makeRun({ role: 'game-ui-artist', label: 'UI设计' });
-    const parallel = makeRun({ id: 'run-2', role: 'game-ui-artist', instanceId: 'aaaa0000-0000-0000-0000-000000002222' });
+  it.each([['game-ui-artist', 'UI设计'], ['game-systems-designer', '玩法策划'], ['game-balance-designer', '数值策划']] as const)('keeps %s identity stable across filtering and event ownership', (role, label) => {
+    const artist = makeRun({ role, label });
+    const parallel = makeRun({ id: 'run-2', role, instanceId: 'aaaa0000-0000-0000-0000-000000002222' });
     const runs = [artist, parallel];
-    const report = makeEvent({ role: 'game-ui-artist' });
-    expect(getAgentIdentity(artist, runs)).toMatchObject({ roleLabel: 'UI设计', shortId: 'aaaa…1111' });
+    const report = makeEvent({ role });
+    expect(getAgentIdentity(artist, runs)).toMatchObject({ roleLabel: label, shortId: 'aaaa…1111' });
     expect(getAgentIdentity(report, runs)).toEqual(getAgentIdentity(artist, runs));
     expect(getAgentIdentity(artist, [parallel, artist])).toEqual(getAgentIdentity(artist, runs));
-    expect(filterBoardRuns(runs, { role: 'game-ui-artist', query: 'UI设计 aaaa…1111' }, NOW)).toEqual([artist]);
-    expect(filterBoardEvents([report], runs, { role: 'game-ui-artist', query: 'UI设计 aaaa…1111' }, NOW)).toEqual([report]);
+    expect(filterBoardRuns(runs, { role, query: `${label} aaaa…1111` }, NOW)).toEqual([artist]);
+    expect(filterBoardEvents([report], runs, { role, query: `${label} aaaa…1111` }, NOW)).toEqual([report]);
     expect(resolveEventRun({ ...report, role: 'game-art-lead' }, runs)).toBeUndefined();
   });
 

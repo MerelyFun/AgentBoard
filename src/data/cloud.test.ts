@@ -80,6 +80,16 @@ describe('public cloud configuration and response boundaries', () => {
     expect(() => readSnapshot({ ...snapshot(), projects: [PROJECTS[0], PROJECTS[0], PROJECTS[1]] })).toThrow(/数据格式异常/);
   });
 
+  it.each([['game-systems-designer', '玩法策划'], ['game-balance-designer', '数值策划']] as const)('accepts %s cloud submissions without treating them as acceptance', (role, label) => {
+    const demo = createDemoSnapshot();
+    const run = { ...demo.runs[0], role, label, lead: false, status: 'submitted' as const };
+    const event = { ...demo.events[0], projectId: run.projectId, runId: run.id, role, kind: 'submitted' };
+    const data = { projects: demo.projects, runs: [run], events: [event] };
+    expect(readSnapshot(data)).toEqual(data);
+    expect(readSnapshot(data).runs[0]).toMatchObject({ role, status: 'submitted', lead: false });
+    expect(readSnapshot(data).runs[0].verdict).toBeUndefined();
+  });
+
   it('accepts one or many projects from the response without adding known projects', () => {
     const projects = Array.from({ length: 7 }, (_, i) => ({ id: `project-${i}`, name: `Project ${i}`, gameName: `游戏 ${i}` }));
     const demo = createDemoSnapshot();

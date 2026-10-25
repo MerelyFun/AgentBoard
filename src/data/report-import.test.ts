@@ -127,6 +127,7 @@ describe('local report projection', () => {
   it.each([
     ['game-art-lead', '美术统筹'], ['game-asset-artist', '原画与资产'],
     ['game-ui-artist', 'UI设计'], ['game-vfx-artist', '动效与特效'],
+    ['game-systems-designer', '玩法策划'], ['game-balance-designer', '数值策划'],
   ])('imports %s submissions as their reported role without assigning technical leadership', (role, label) => {
     const snapshot = importReportFiles([
       file(event({ role })),
@@ -181,9 +182,10 @@ describe('all-or-nothing validation', () => {
     expect(() => importReportFiles([file(event({ role: 'game-producer', lead: true }))])).toThrow(/仅 game-developer/);
   });
 
-  it.each(['game-art-lead', 'game-asset-artist', 'game-ui-artist', 'game-vfx-artist'])('rejects technical lead and formal verification claims from %s', (role) => {
+  it.each(['game-art-lead', 'game-asset-artist', 'game-ui-artist', 'game-vfx-artist', 'game-systems-designer', 'game-balance-designer'])('rejects technical lead and formal verification claims from %s', (role) => {
     expect(() => importReportFiles([file(event({ role, lead: true }))])).toThrow(/仅 game-developer 或 game-tech-lead/);
     expect(() => importReportFiles([file(event({ role, kind: 'verification', verdict: 'pass' }))])).toThrow(/仅供 game-verifier/);
+    expect(() => importReportFiles([file(event({ role, kind: 'submitted', verdict: 'pass' }))])).toThrow(/只能出现在 verification/);
   });
 
   it('rejects conflicting duplicate IDs and changing a run identity instead of silently overwriting', () => {
@@ -202,7 +204,7 @@ describe('all-or-nothing validation', () => {
 });
 
 describe('Python reporter contract', () => {
-  it('imports real CLI outbox events for four roles and rejects forbidden CLI actions', () => {
+  it('imports real CLI outbox events including both design roles and rejects forbidden CLI actions', () => {
     const temporaryRoot = resolve(tmpdir());
     const dataDir = mkdtempSync(join(temporaryRoot, 'agentboard-report-qa-'));
     const reporter = fileURLToPath(new URL('../../tools/report.py', import.meta.url));
@@ -219,6 +221,12 @@ describe('Python reporter contract', () => {
         '--task', 'QA-contract-dev', '--summary', 'QA：验证开发继承上下文');
       const verifier = cli('begin', '--parent', producer.run_id, '--role', 'game-verifier',
         '--task', 'QA-contract-verify', '--summary', 'QA：验证独立验收事件');
+      const designers = ['game-systems-designer', 'game-balance-designer'].map((role) => {
+        const designer = cli('begin', '--parent', producer.run_id, '--role', role,
+          '--task', `QA-contract-${role}`, '--summary', 'QA：策划继承制作人阶段');
+        cli('event', '--run', designer.run_id, '--kind', 'submitted', '--summary', 'QA：设计提交待审');
+        return { ...designer, role };
+      });
       cli('event', '--run', lead.run_id, '--kind', 'submitted', '--summary', 'QA：技术负责人提交集成');
       cli('event', '--run', developer.run_id, '--kind', 'submitted', '--summary', 'QA：开发提交');
       cli('event', '--run', verifier.run_id, '--kind', 'verification', '--verdict', 'pass',
@@ -236,8 +244,14 @@ describe('Python reporter contract', () => {
       const outbox = join(dataDir, 'outbox');
       const files = readdirSync(outbox).reverse().map((name) => ({ name, text: readFileSync(join(outbox, name), 'utf8') }));
       const snapshot = importReportFiles(files);
-      expect(snapshot.events).toHaveLength(9);
-      expect(snapshot.runs).toHaveLength(4);
+      expect(snapshot.events).toHaveLength(13);
+      expect(snapshot.runs).toHaveLength(6);
+      for (const designer of designers) {
+        expect(snapshot.runs.find((run) => run.id === designer.run_id)).toMatchObject({
+          role: designer.role, lead: false, status: 'submitted', parentRunId: producer.run_id,
+        });
+        expect(snapshot.runs.find((run) => run.id === designer.run_id)?.verdict).toBeUndefined();
+      }
       expect(snapshot.runs.find((run) => run.id === lead.run_id)).toMatchObject({ role: 'game-tech-lead', lead: true, status: 'submitted', parentRunId: producer.run_id });
       expect(snapshot.runs.find((run) => run.id === developer.run_id)).toMatchObject({ role: 'game-developer', lead: false, status: 'submitted', parentRunId: lead.run_id });
       expect(snapshot.runs.find((run) => run.id === verifier.run_id)).toMatchObject({ status: 'stopped', verdict: 'pass' });
