@@ -1,6 +1,7 @@
 export const ART_ROLES = ['game-art-lead', 'game-asset-artist', 'game-ui-artist', 'game-vfx-artist'] as const;
-export const ROLES = ['game-producer', 'game-tech-lead', 'game-developer', 'game-verifier', ...ART_ROLES] as const;
-const SUBMITTING_ROLES: readonly string[] = ['game-developer', 'game-tech-lead', ...ART_ROLES];
+export const DESIGN_ROLES = ['game-systems-designer', 'game-balance-designer'] as const;
+export const ROLES = ['game-producer', 'game-tech-lead', 'game-developer', 'game-verifier', ...ART_ROLES, ...DESIGN_ROLES] as const;
+const SUBMITTING_ROLES: readonly string[] = ['game-developer', 'game-tech-lead', ...ART_ROLES, ...DESIGN_ROLES];
 export const KINDS = ['started', 'checkpoint', 'blocked', 'unblocked', 'submitted', 'verification', 'stopped', 'cancelled'] as const;
 export type Role = typeof ROLES[number];
 export type ProjectId = string;

@@ -22,6 +22,8 @@
   --asset-artist: #c7734d;
   --ui-artist: #8d68a8;
   --vfx-artist: #3e8d92;
+  --systems-designer: #637c32;
+  --balance-designer: #aa671d;
   --radius: 10px;
 }
 
@@ -198,6 +200,8 @@ input::placeholder { color: #8b94a1; }
 .role-avatar.game-asset-artist { color: var(--asset-artist); border-color: #f0dccc; background: #fbefe5; }
 .role-avatar.game-ui-artist { color: var(--ui-artist); border-color: #e6dcef; background: #f4edf9; }
 .role-avatar.game-vfx-artist { color: var(--vfx-artist); border-color: #cfe7e5; background: #e8f4f2; }
+.role-avatar.game-systems-designer { color: var(--systems-designer); border-color: #e0e8cf; background: #f1f5e9; }
+.role-avatar.game-balance-designer { color: var(--balance-designer); border-color: #efdfc5; background: #faf2e7; }
 .run-name { min-width: 0; }
 .run-name strong { display: block; font-size: 13px; font-weight: 600; line-height: 1.65; overflow-wrap: anywhere; }
 .run-name code { margin-left: 5px; color: var(--muted); font-size: 10px; font-weight: 450; }
@@ -243,6 +247,8 @@ input::placeholder { color: #8b94a1; }
 .timeline-dot.game-asset-artist { background: var(--asset-artist); }
 .timeline-dot.game-ui-artist { background: var(--ui-artist); }
 .timeline-dot.game-vfx-artist { background: var(--vfx-artist); }
+.timeline-dot.game-systems-designer { background: var(--systems-designer); }
+.timeline-dot.game-balance-designer { background: var(--balance-designer); }
 .timeline-event-button { display: flex; align-items: flex-start; gap: 11px; width: 100%; min-width: 0; padding: 17px 0; border-bottom: 1px solid #edf0f3; text-align: left; transition: background .15s; }
 .timeline-event:last-child .timeline-event-button { border-bottom: 0; }
 .timeline-event-button:hover { background: #f8fbfa; }

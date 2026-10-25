@@ -1,4 +1,4 @@
-import { ART_ROLES, sha256, validateReport, writerAllows } from '../functions/_shared/protocol.ts';
+import { ART_ROLES, DESIGN_ROLES, sha256, validateReport, writerAllows } from '../functions/_shared/protocol.ts';
 import { allowedOrigin, readJson, respond } from '../functions/_shared/http.ts';
 
 function assert(value: unknown, message = 'assertion failed'): asserts value { if (!value) throw new Error(message); }
@@ -75,6 +75,20 @@ Deno.test('art roles submit in their own identity but cannot claim technical lea
 });
 Deno.test('SHA-256 is hex and deterministic without persisting raw credentials', async () => {
   assert(await sha256('abc') === 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+});
+Deno.test('design roles submit pending review with separate writer scopes and no acceptance authority', () => {
+  for (const role of DESIGN_ROLES) {
+    const event = validateReport({ ...base(), role, kind: 'submitted', evidence: ['docs/design.md'] });
+    assert(event.schema_version === 1 && event.role === role && !event.lead && event.verdict === undefined);
+    assert(writerAllows(event, { role, project_ids: ['3match'] }));
+    for (const otherRole of ['game-producer', 'game-developer', ...DESIGN_ROLES.filter((value) => value !== role)]) {
+      assert(!writerAllows(event, { role: otherRole, project_ids: ['3match'] }));
+    }
+    assert(!writerAllows(event, { role, project_ids: ['cat-and-dog'] }));
+    throws(() => validateReport({ ...base(), role, lead: true }));
+    throws(() => validateReport({ ...base(), role, kind: 'verification', verdict: 'pass' }));
+    throws(() => validateReport({ ...base(), role, kind: 'submitted', verdict: 'pass' }));
+  }
 });
 Deno.test('CORS only echoes approved origins and responses are never cached', () => {
   const request = new Request('https://example.test', { headers: { origin: 'https://xn--hyvt5k.club' } });

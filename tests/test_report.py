@@ -133,6 +133,39 @@ class ReporterTest(unittest.TestCase):
         self.assertEqual(result["delivery"], "error")
         self.assertFalse((self.storage / "runs").exists())
 
+    def test_designers_inherit_producer_context_and_submit_pending_review(self):
+        producer = self.begin()
+        original = json.loads((self.storage / "runs" / f"{producer['run_id']}.json").read_text(encoding="utf-8"))
+        for role in ("game-systems-designer", "game-balance-designer"):
+            with self.subTest(role=role):
+                designer = self.call("begin", "--role", role, "--parent", producer["run_id"], "--task", "design", "--summary", "策划方案")
+                self.call("event", "--run", designer["run_id"], "--kind", "submitted", "--summary", "设计交付待制作人审阅", "--evidence", "docs/design.md")
+                self.call("event", "--run", designer["run_id"], "--kind", "verification", "--verdict", "pass", "--summary", "禁止自验", expected=1)
+                self.call("event", "--run", designer["run_id"], "--kind", "submitted", "--verdict", "pass", "--summary", "禁止夹带验收", expected=1)
+                submission = next(event for event in self.events() if event["run_id"] == designer["run_id"] and event["kind"] == "submitted")
+                self.assertEqual(submission["role"], role)
+                self.assertFalse(submission["lead"])
+                self.assertNotIn("verdict", submission)
+                self.assertEqual(submission["parent_run_id"], producer["run_id"])
+                for key in ("project_id", "milestone", "step"):
+                    self.assertEqual(submission[key], original[key])
+                self.call("begin", "--role", role, "--parent", producer["run_id"], "--task", "changed-phase", "--step", "M2", "越界阶段", "--summary", "禁止覆盖", expected=1)
+        self.assertEqual(len(self.events()), 5)
+
+    def test_designers_only_link_to_producer_and_cannot_dispatch_any_role(self):
+        producer = self.begin()
+        other_roles = ("game-tech-lead", "game-developer", "game-verifier", "game-art-lead", "game-asset-artist", "game-ui-artist", "game-vfx-artist", "game-systems-designer", "game-balance-designer")
+        parents = {role: self.begin(role) for role in other_roles}
+        before = len(self.events())
+        for design_role in ("game-systems-designer", "game-balance-designer"):
+            for parent_role, parent in parents.items():
+                with self.subTest(design_role=design_role, parent_role=parent_role):
+                    self.call("begin", "--role", design_role, "--parent", parent["run_id"], "--task", "invalid-parent", "--summary", "非法来源", expected=1)
+            for child_role in ("game-producer", *other_roles):
+                with self.subTest(designer_parent=design_role, child_role=child_role):
+                    self.call("begin", "--role", child_role, "--parent", parents[design_role]["run_id"], "--task", "invalid-dispatch", "--summary", "策划不派开发或其他岗位", expected=1)
+        self.assertEqual(len(self.events()), before)
+
     def test_lead_submits_integration_but_cannot_verify(self):
         lead = self.begin("game-tech-lead")
         self.call("event", "--run", lead["run_id"], "--kind", "submitted", "--summary", "集成包待独立验收", "--evidence", "docs/integration.md")

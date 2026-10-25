@@ -1,4 +1,4 @@
-import { Brush, Code2, Cpu, Palette, PanelsTopLeft, ShieldCheck, Sparkles, UserRound, type LucideIcon } from 'lucide-react';
+import { Brush, Calculator, Code2, Cpu, Gamepad2, Palette, PanelsTopLeft, ShieldCheck, Sparkles, UserRound, type LucideIcon } from 'lucide-react';
 import type { AgentRole } from '../domain/board';
 
 const ROLE_ICONS: Record<AgentRole, LucideIcon> = {
@@ -10,6 +10,8 @@ const ROLE_ICONS: Record<AgentRole, LucideIcon> = {
   'game-asset-artist': Brush,
   'game-ui-artist': PanelsTopLeft,
   'game-vfx-artist': Sparkles,
+  'game-systems-designer': Gamepad2,
+  'game-balance-designer': Calculator,
 };
 
 export function RoleAvatar({ role, className = '' }: { role: AgentRole; className?: string }) {

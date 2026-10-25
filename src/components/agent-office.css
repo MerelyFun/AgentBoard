@@ -54,6 +54,8 @@
 .office-workstation[data-role='game-asset-artist'] { --office-role: #bc7c57; }
 .office-workstation[data-role='game-ui-artist'] { --office-role: #9274af; }
 .office-workstation[data-role='game-vfx-artist'] { --office-role: #4b9292; }
+.office-workstation[data-role='game-systems-designer'] { --office-role: #637c32; }
+.office-workstation[data-role='game-balance-designer'] { --office-role: #aa671d; }
 .office-worker-sprite { position: absolute; z-index: 2; inset: 0; display: block; background-image: url('../assets/studio-people-v2.webp'); background-size: 200% 200%; background-repeat: no-repeat; pointer-events: none; transform-origin: 50% 75%; }
 .office-worker-sprite[data-variant='0'] { background-position: 0 0; }
 .office-worker-sprite[data-variant='1'] { background-position: 100% 0; }

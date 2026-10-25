@@ -8,6 +8,7 @@ export function isProjectId(value: unknown): value is ProjectId {
 export const AGENT_ROLES = [
   'game-producer', 'game-tech-lead', 'game-developer', 'game-verifier',
   'game-art-lead', 'game-asset-artist', 'game-ui-artist', 'game-vfx-artist',
+  'game-systems-designer', 'game-balance-designer',
 ] as const;
 export type AgentRole = typeof AGENT_ROLES[number];
 export type RunStatus =
@@ -95,6 +96,8 @@ export const ROLE_LABELS: Record<AgentRole, string> = {
   'game-asset-artist': '原画与资产',
   'game-ui-artist': 'UI设计',
   'game-vfx-artist': '动效与特效',
+  'game-systems-designer': '玩法策划',
+  'game-balance-designer': '数值策划',
 };
 
 export const STATUS_LABELS: Record<DisplayStatus, string> = {

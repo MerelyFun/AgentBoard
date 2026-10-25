@@ -37,12 +37,13 @@ describe('reported activity freshness', () => {
 });
 
 describe('board filters', () => {
-  it('supports eight role labels and filters technical leadership independently from developers', () => {
+  it('supports all role labels and filters technical leadership independently from developers', () => {
     expect(ROLE_LABELS).toEqual({
       'game-producer': '制作人', 'game-tech-lead': '技术负责人',
       'game-developer': '开发', 'game-verifier': '验收',
       'game-art-lead': '美术统筹', 'game-asset-artist': '原画与资产',
       'game-ui-artist': 'UI设计', 'game-vfx-artist': '动效与特效',
+      'game-systems-designer': '玩法策划', 'game-balance-designer': '数值策划',
     });
     const runs = snapshot().runs;
     const leads = filterRuns(runs, { role: 'game-tech-lead', query: '技术负责人' }, NOW);
@@ -55,6 +56,7 @@ describe('board filters', () => {
   it.each([
     ['game-art-lead', '美术统筹'], ['game-asset-artist', '原画与资产'],
     ['game-ui-artist', 'UI设计'], ['game-vfx-artist', '动效与特效'],
+    ['game-systems-designer', '玩法策划'], ['game-balance-designer', '数值策划'],
   ] as const)('filters explicit %s reports without reclassifying developer summaries', (role, label) => {
     const original = snapshot().runs[0];
     const artist = { ...original, id: `art-${role}`, role, label };

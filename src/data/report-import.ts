@@ -45,6 +45,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SUBMISSION_ROLES: readonly AgentRole[] = [
   'game-developer', 'game-tech-lead',
   'game-art-lead', 'game-asset-artist', 'game-ui-artist', 'game-vfx-artist',
+  'game-systems-designer', 'game-balance-designer',
 ];
 const KINDS = ['started', 'checkpoint', 'blocked', 'unblocked', 'submitted', 'verification', 'stopped', 'cancelled'] as const;
 const VERDICTS = ['pass', 'fail', 'inconclusive'] as const;
